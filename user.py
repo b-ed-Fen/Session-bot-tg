@@ -11,8 +11,13 @@ class user:
         'UTC': 3
     }
 
-    position = {    # позиция пользователя
+    position = {  # позиция пользователя
         'last message': 0,  # **может не понадобится**
         'week even': False,
         'day': 1
     }
+
+    def __init__(self, id, name, surname):
+        self.id = id
+        self.name = name
+        self.surname = surname

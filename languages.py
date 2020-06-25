@@ -14,6 +14,12 @@ assembly = {
               '\nВыбери язык на котором тебе  удобнее со мной общатся:'
     },
 
+    'been selected': {
+        'us': 'already been selected',
+        'ua': 'вже було вибрано',
+        'ru': 'уже было выбрано'
+    },
+
     'week even': {
         'us': {
             0: 'week: Even',

@@ -3,21 +3,16 @@ from datetime import datetime, date, timedelta
 import time
 from time import gmtime, strftime
 import telepot
+import telebot
 from telebot import types
 import telegram.ext
 from telegram.ext import Updater
 import os
+import threading
 
 import languages
 import user
 import tools
-
-u = user.user
-u.name = 0
-u.schedule = [[['11', '22', '33'], ['21', '32', '43'], ['31', '42', '53'], ['41', '52', '63'], ['51', '62', '73'],
-               ['61', '72', '83'], ['71', '82', '93']],
-              [['11', '22', '33'], ['21', '32', '43'], ['31', '42', '53'], ['41', '52', '63'], ['51', '62', '73'],
-               ['61', '72', '83'], ['71', '82', '93']]]
 
 
 def daily_schedule(client, w, d):
@@ -43,4 +38,71 @@ def information_line(client, w, d):
     return answer
 
 
-print(information_line(u, 1, 1))
+token = 'TOKEN'
+update = Updater(token, use_context=True)
+bot = telebot.TeleBot(token)
+job = update.job_queue
+
+users = []
+
+
+def notification():
+    while True:
+        bot.send_message(436867541, 'notification')
+        time.sleep(60)
+
+
+# выбор языка
+language_selection = types.InlineKeyboardMarkup()
+eng_button = types.InlineKeyboardButton(text="🇺🇸", callback_data='us')
+ukr_button = types.InlineKeyboardButton(text="🇺🇦", callback_data='ua')
+rus_button = types.InlineKeyboardButton(text="🇷🇺", callback_data='ru')
+language_selection.add(eng_button, ukr_button, rus_button)
+
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    global users
+
+    client = user.user(message.chat.id, message.from_user.first_name, message.from_user.last_name)
+    users.append(client)
+
+    bot.send_message(message.chat.id,
+                     languages.assembly['hi'][client.settings['language']] + ' ' + client.name + '.\n' + \
+                     languages.assembly['greeting'][client.settings['language']], reply_markup=language_selection)
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_worker(call):
+    # поиск пользователя:
+    user_id_array = 0
+    for i in users:
+        if i.id == call.message.chat.id:
+            client = users[user_id_array]
+            break
+        user_id_array = user_id_array + 1
+
+    # смена языка:
+    if call.data == 'us' or call.data == 'ua' or call.data == 'ru':
+        past = users[user_id_array].settings['language']
+        if call.data == 'us':
+            users[user_id_array].settings['language'] = 'us'
+        elif call.data == 'ua':
+            users[user_id_array].settings['language'] = 'ua'
+        elif call.data == 'ru':
+            users[user_id_array].settings['language'] = 'ru'
+
+        if call.data != past:
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text=languages.assembly['hi'][client.settings['language']] + ' ' + client.name + '.\n' + \
+                                       languages.assembly['greeting'][client.settings['language']],
+                                  reply_markup=language_selection)
+        else:
+            bot.answer_callback_query(callback_query_id=call.id,
+                                      text=languages.assembly['been selected'][client.settings['language']])
+
+
+th = threading.Thread(target=notification)
+th.daemon = True
+th.start()
+bot.polling(none_stop=True)
