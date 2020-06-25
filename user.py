@@ -7,8 +7,10 @@ class user:
     settings = {
         'notification': 0,  # уведомление (Да/Нет)
         'combination of weeks': 0,  # совместить расписание в одну неделю (Да/Нет)
-        'language': 'us'  # язык
-                }
+        'language': 'us',  # язык
+        'UTC': 3
+    }
+
     position = {    # позиция пользователя
         'last message': 0,  # **может не понадобится**
         'week even': False,

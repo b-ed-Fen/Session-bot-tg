@@ -53,14 +53,6 @@ def get_schedule(id, array):
     file.close()
 
 
-def str_schedule(array, w, d):
-    answer = ''
-
-    for i in array[w][d]:
-        answer = answer + str(i) + '\n'
-    return answer
-
-
 def get_even():  # True - Четная; False - Не четная
     date_day = date.today()
     w = datetime(date_day.year, date_day.month, date_day.day)
@@ -72,6 +64,14 @@ def get_even():  # True - Четная; False - Не четная
     return True
 
 
+couples_schedule = {
+    1: '8 30',
+    2: '10 10',
+    3: '11 50',
+    4: '14 00',
+    5: '15 40',
+}
+
 '''
 Пример работы создания файла с расписанием и чтение с автоудалением соответсвенно:
 get_schedule(0, [[['11', '22', '33'], ['21', '32', '43'], ['31', '42', '53'], ['41', '52', '63'], ['51', '62', '73'],
@@ -80,5 +80,3 @@ get_schedule(0, [[['11', '22', '33'], ['21', '32', '43'], ['31', '42', '53'], ['
                   ['61', '72', '83'], ['71', '82', '93']]])
 print(set_schedule(0))
 '''
-
-print(get_even())
