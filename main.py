@@ -38,7 +38,7 @@ def information_line(client, w, d):
     return answer
 
 
-token = 'TOKEN'
+token = '1206596318:AAH_n8Uz71KIGJHqpv_dFN5fz3aJ15Dkspk'
 update = Updater(token, use_context=True)
 bot = telebot.TeleBot(token)
 job = update.job_queue
@@ -72,10 +72,40 @@ def start(message):
                      languages.assembly['greeting'][client.settings['language']], reply_markup=language_selection)
 
 
+# Сохраняем присланый файл с расписанием
+@bot.message_handler(content_types=['document'])
+def handle_docs_photo(message):
+    try:
+        user_id_array = 0
+        for i in users:
+            if i.id == message.chat.id:
+                client = users[user_id_array]
+                break
+            user_id_array = user_id_array + 1
+
+        chat_id = message.chat.id
+
+        file_info = bot.get_file(message.document.file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+
+        src = 'temp/' + str(chat_id) + '.txt'
+        with open(src, 'wb') as new_file:
+            new_file.write(downloaded_file)
+        bot.reply_to(message, languages.assembly['received'][client.settings['language']])
+
+        client.schedule = tools.set_schedule(str(chat_id))
+        users[user_id_array] = client
+        print(client.schedule)
+
+    except Exception as e:
+        bot.reply_to(message, e)
+
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
     # поиск пользователя:
     user_id_array = 0
+    global users
     for i in users:
         if i.id == call.message.chat.id:
             client = users[user_id_array]
@@ -94,7 +124,8 @@ def callback_worker(call):
 
         if call.data != past:
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                  text=languages.assembly['hi'][client.settings['language']] + ' ' + client.name + '.\n' + \
+                                  text=languages.assembly['hi'][
+                                           client.settings['language']] + ' ' + client.name + '.\n' + \
                                        languages.assembly['greeting'][client.settings['language']],
                                   reply_markup=language_selection)
         else:

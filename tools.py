@@ -4,9 +4,9 @@ import time
 from time import strftime
 
 
-def set_schedule(id):
+def set_schedule(name):
     try:
-        file = open('temp/' + str(id) + '.txt', 'r')
+        file = open('temp/' + str(name) + '.txt', 'r')
     except Exception as e:
         answer = []
         return 'Oops! \n' + str(e)
@@ -35,7 +35,7 @@ def set_schedule(id):
             number_of_blank_lines = 0
 
     file.close()
-    os.remove('temp/' + str(id) + '.txt')
+    os.remove('temp/' + str(name) + '.txt')
     return answer
 
 
