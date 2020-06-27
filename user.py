@@ -5,8 +5,8 @@ class user:
     schedule = []  # расписание
     time = '00:00'
     settings = {
-        'notification': 0,  # уведомление (Да/Нет)
-        'combination of weeks': 0,  # совместить расписание в одну неделю (Да/Нет)
+        'notification': False,  # уведомление (Да/Нет)
+        'combination of weeks': False,  # совместить расписание в одну неделю (Да/Нет)
         'language': 'us',  # язык
         'UTC': 3
     }
