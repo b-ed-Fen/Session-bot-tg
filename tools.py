@@ -2,6 +2,8 @@ import os
 from datetime import datetime, date
 import time
 from time import strftime
+import user
+import copy
 
 
 def set_schedule(name):
@@ -80,3 +82,66 @@ get_schedule(0, [[['11', '22', '33'], ['21', '32', '43'], ['31', '42', '53'], ['
                   ['61', '72', '83'], ['71', '82', '93']]])
 print(set_schedule(0))
 '''
+
+
+# находит пользователя в массиве, вырезает его из массива,
+# возврящает клон пользователя и массив пользователей без
+# этого пользователя
+def find_and_cut(array_of_users, user_id):
+    array_of_users_copy = copy.deepcopy(array_of_users)
+    answer = []
+    client = 0
+    user_id_array = 0
+    for i in array_of_users_copy:
+        if i.id == user_id:
+            client = copy.deepcopy(array_of_users[user_id_array])
+            del array_of_users_copy[user_id_array]
+            break
+        user_id_array = user_id_array + 1
+    answer.append(array_of_users_copy)
+    answer.append(client)
+    return answer
+
+
+# возвращает массив пользователей с измененным пользователем
+def people_can_change(user_obj, change, parameter, value):
+    id = user_obj.id
+    name = user_obj.name
+    surname = user_obj.surname
+    schedule = user_obj.schedule
+    time = user_obj.time
+
+    settings = user_obj.settings
+    position = user_obj.position
+
+    del user_obj
+    if change == 'id':
+        id = value
+    elif change == 'name':
+        name = value
+    elif change == 'surname':
+        surname = value
+    elif change == 'schedule':
+        schedule = value
+    elif change == 'time':
+        time = value
+    elif change == 'settings':
+        if parameter == 'notification':
+            settings['notification'] = value
+        elif parameter == 'combination of weeks':
+            settings['combination of weeks'] = value
+        elif parameter == 'language':
+            settings['language'] = value
+        elif parameter == 'UTC':
+            settings['UTC'] = value
+    elif change == 'position':
+        if parameter == 'last message':
+            position['last message'] = value
+        elif parameter == 'week even':
+            position['week even'] = value
+        elif parameter == 'day':
+            position['day'] = value
+
+    client = user.user(id=id, name=name, surname=surname, schedule=schedule,
+                       time=time, settings=settings, position=position)
+    return client

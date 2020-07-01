@@ -1,3 +1,5 @@
+import user
+client = user.user(0, 'non', 'non')
 assembly = {
     'hi': {
         'us': 'Hi',
@@ -6,18 +8,46 @@ assembly = {
     },
 
     'greeting': {
-        'us': 'Glad to welcome you! I can come in handy in your dungeon at school or university :3'
-              '\n Choose a language in which it is more convenient for you to communicate with me: ',
-        'ua': 'Радий тебе вітати! Я можу тобі знадобиться в твоєму проходженні Данжі в школі або універі: 3'
-              '\nВибери мову на якому тобі зручніше зі мною спілкуватися:',
+        'us': 'Glad to welcome you! I can come in handy in your dungeon at school or university :3',
+        'ua': 'Радий тебе вітати! Я можу тобі знадобиться в твоєму проходженні Данжі в школі або універі: 3',
         'ru': 'Рад тебя приветствовать! Я могу тебе пригодится в твоем прохождении данжа в школе или универе :3'
-              '\nВыбери язык на котором тебе  удобнее со мной общатся:'
+
     },
 
     'been selected': {
         'us': 'already been selected',
         'ua': 'вже було вибрано',
         'ru': 'уже было выбрано'
+    },
+
+    'not in the database': {
+        'us': 'You are not in the database, write /start to register.',
+        'ua': 'Вас немає в базі, напишіть /start щоб зареєструватись.',
+        'ru': 'Вас нет в базе, напишите /start чтобы зарегистрироватся.'
+    },
+
+    'joint week': {
+        'us': 'If you want the schedule to be the same at all weeks (even and non-even), then click on "🟢", '
+              'if you want to disable this function, click on "⭕".\nWe will take your schedule for the odd week as '
+              'the main thing.',
+        'ua': 'Якщо ви хочете щоб розклад було однаковим на всіх тижнях (парних і не) то натисніть на "🟢", '
+              'якщо хочете відключити цю функцію натисніть на "⭕".\nМи візьмемо ваш розклад для непарної тижні як '
+              'головне.',
+        'ru': 'Если вы хотите чтобы расписание было одинаковым на всех неделях (четным и не) то нажмите на "🟢", '
+              'если хотите отключить эту функцию нажмите на "⭕".\nМы возьмем ваше расписание для нечетной недели как '
+              'главное. '
+    },
+
+    'choose a language': {
+        'us': 'Choose a language',
+        'ua': 'Оберіть мову',
+        'ru': 'Выберете язык'
+    },
+
+    'choose a utc': {
+        'us': 'Enter the UTC of your region, for example 2.',
+        'ua': 'Введіть UTC вашого регіону, наприклад 2.',
+        'ru': 'Введите UTC вашего региона, например 2.'
     },
 
     'week even': {
@@ -35,6 +65,13 @@ assembly = {
             0: 'неделя: Четная',
             1: 'неделя: Нечетная'
         }
+    },
+
+    'received': {
+        'us': 'received!',
+        'ua': 'прийнято!',
+        'ru': 'принято!',
+
     },
 
     'week day': {
@@ -72,3 +109,31 @@ assembly = {
     }
 
 }
+
+
+def settings(client):
+    user_settings = {
+        'us': 'Settings: \n'
+            '/merger - The merger of weeks = ' + str(client.settings['combination of weeks']) + '\n'
+            '/language - language selection = ' + str(client.settings['language']) + '\n'
+            '/UTC - Set your time at UTC = ' + str(client.settings['UTC']) + '\n'
+            '/inverting - Swap the weekly schedule = ' + str(client.position['week even']) + '\n'
+            '/notification - Turn on the visions = ' + str(client.position['week even']) + '\n'
+            '/time - Set the time for seeing = ' + str(client.time) + '\n',
+        'ua': 'Налаштування: \n'
+            '/merger - Злиття тижнів = ' + str(client.settings['combination of weeks']) + '\n'
+            '/language - Вибір мови = ' + str(client.settings['language']) + '\n'
+            '/UTC - Встановити ваш час по UTC = ' + str(client.settings['UTC']) + '\n'
+            '/inverting - Поміняти місцями розклад тижнів = ' + str(client.position['week even']) + '\n'
+            '/notification - Включення увідомленій = ' + str(client.position['week even']) + '\n'
+            '/time - Встановити час увідомленія = ' + str(client.time) + '\n',
+        'ru': 'Settings: \n'
+            '/merger - Слияние недель = ' + str(client.settings['combination of weeks']) + '\n'
+            '/language - Выбор языка = ' + str(client.settings['language']) + '\n'
+            '/UTC - Установить ваше время по UTC = ' + str(client.settings['UTC']) + '\n'
+            '/inverting - Поменять местами расписание недель = ' + str(client.position['week even']) + '\n'
+            '/notification - Turn on the visions = ' + str(client.position['week even']) + '\n'
+            '/time - Установить время увидомления = ' + str(client.time) + '\n'
+    }
+    return user_settings[client.settings['language']]
+
