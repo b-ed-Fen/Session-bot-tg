@@ -60,12 +60,6 @@ ukr_button = types.InlineKeyboardButton(text="🇺🇦", callback_data='ua')
 rus_button = types.InlineKeyboardButton(text="🇷🇺", callback_data='ru')
 language_selection.add(eng_button, ukr_button, rus_button)
 
-# соединение недель
-connection_weeks = types.InlineKeyboardMarkup()
-connection_weeks_yes = types.InlineKeyboardButton(text="🟢", callback_data='connection weeks yes')
-connection_weeks_no = types.InlineKeyboardButton(text="⭕", callback_data='connection weeks no')
-connection_weeks.add(connection_weeks_no, connection_weeks_yes, )
-
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -133,6 +127,8 @@ def language(message):
 
 @bot.message_handler(commands=['merger'])
 def merger(message):
+    # соединение недель
+
     global users
     find = tools.find_and_cut(users, message.chat.id)
     client = find[1]
@@ -141,8 +137,38 @@ def merger(message):
         bot.send_message(message.chat.id,
                          languages.assembly['not in the database']['ua'])
     else:
+        connection_weeks = types.InlineKeyboardMarkup()
+        connection_weeks_yes = types.InlineKeyboardButton(text=languages.assembly['yes'][client.settings['language']],
+                                                          callback_data='connection weeks yes')
+        connection_weeks_no = types.InlineKeyboardButton(text=languages.assembly['no'][client.settings['language']],
+                                                         callback_data='connection weeks no')
+        connection_weeks.add(connection_weeks_no, connection_weeks_yes, )
         bot.send_message(message.chat.id,
                          languages.assembly['joint week'][client.settings['language']], reply_markup=connection_weeks)
+
+
+@bot.message_handler(commands=['inverting'])
+def merger(message):
+    # поменять недели местами
+
+    global users
+    find = tools.find_and_cut(users, message.chat.id)
+    client = find[1]
+
+    if client == 0:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ua'])
+    else:
+        connection_weeks = types.InlineKeyboardMarkup()
+        connection_weeks_yes = types.InlineKeyboardButton(text=languages.assembly['yes'][client.settings['language']],
+                                                          callback_data='swap schedule yes')
+        connection_weeks_no = types.InlineKeyboardButton(text=languages.assembly['no'][client.settings['language']],
+                                                         callback_data='swap schedule no')
+        connection_weeks.add(connection_weeks_no, connection_weeks_yes, )
+
+        bot.send_message(message.chat.id,
+                         languages.assembly['swap schedule'][client.settings['language']],
+                         reply_markup=connection_weeks)
 
 
 @bot.message_handler(commands=['settings'])
@@ -254,6 +280,28 @@ def callback_worker(call):
                 if call.data == 'connection weeks no':
                     bot.answer_callback_query(callback_query_id=call.id,
                                               text='Weeks are the same: False')
+
+            else:
+                bot.answer_callback_query(callback_query_id=call.id,
+                                          text=languages.assembly['been selected'][client.settings['language']])
+
+        # поменять местами расписание
+        if call.data == 'swap schedule yes' or call.data == 'swap schedule no':
+            past = client.position['week even']
+            if call.data == 'swap schedule yes':
+                client = tools.people_can_change(client, 'position', 'week even', True)
+                users.append(client)
+            elif call.data == 'swap schedule no':
+                client = tools.people_can_change(client, 'position', 'week even', False)
+                users.append(client)
+
+            if call.data != past:
+                if call.data == 'swap schedule yes':
+                    bot.answer_callback_query(callback_query_id=call.id,
+                                              text='Parity and non-parity have changed: True')
+                if call.data == 'swap schedule no':
+                    bot.answer_callback_query(callback_query_id=call.id,
+                                              text='Parity and non-parity have changed: False')
 
             else:
                 bot.answer_callback_query(callback_query_id=call.id,
