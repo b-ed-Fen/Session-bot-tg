@@ -27,15 +27,18 @@ assembly = {
     },
 
     'joint week': {
-        'us': 'If you want the schedule to be the same at all weeks (even and non-even), then click on "🟢", '
-              'if you want to disable this function, click on "⭕".\nWe will take your schedule for the odd week as '
-              'the main thing.',
-        'ua': 'Якщо ви хочете щоб розклад було однаковим на всіх тижнях (парних і не) то натисніть на "🟢", '
-              'якщо хочете відключити цю функцію натисніть на "⭕".\nМи візьмемо ваш розклад для непарної тижні як '
-              'головне.',
-        'ru': 'Если вы хотите чтобы расписание было одинаковым на всех неделях (четным и не) то нажмите на "🟢", '
-              'если хотите отключить эту функцию нажмите на "⭕".\nМы возьмем ваше расписание для нечетной недели как '
-              'главное. '
+        'us': 'We will take the schedule for the odd week as the main thing. Do you want the schedule to be the same '
+              'for all types of weeks?',
+        'ua': 'Ми візьмемо розклад для непарної тижні як головне. Ви хочете щоб розклад було однаковим на всіх типах '
+              'тижнів?',
+        'ru': 'Мы возьмем расписание для нечетной недели как главное. Вы хотите чтобы расписание было одинаковым на '
+              'всех типах недель? '
+    },
+
+    'swap schedule': {
+        'us': 'Swap even and non-even schedules?',
+        'ua': 'Поміняти місцями парну і не парне розклад?',
+        'ru': 'Поменять местами четную и не четное расписание?'
     },
 
     'choose a language': {
@@ -50,6 +53,12 @@ assembly = {
         'ru': 'Введите UTC вашего региона, например 2.'
     },
 
+    'notification': {
+        'us': 'Enable daily notifications?',
+        'ua': 'Включити щоденні повідомлення?',
+        'ru': 'Включить ежедневные уведомления?'
+    },
+
     'week even': {
         'us': {
             0: 'week: Even',
@@ -58,12 +67,12 @@ assembly = {
 
         'ua': {
             0: 'тиждень: Парна',
-            1: 'тиждень: Непарна',
+            1: 'тиждень: Не парна',
         },
 
         'ru': {
             0: 'неделя: Четная',
-            1: 'неделя: Нечетная'
+            1: 'неделя: Не четная'
         }
     },
 
@@ -106,6 +115,17 @@ assembly = {
 
         }
 
+    },
+    'yes': {
+        'us': 'Yes',
+        'ua': 'Так',
+        'ru': 'Да'
+    },
+
+    'no': {
+        'us': 'No',
+        'ua': 'Нi',
+        'ru': 'Нет'
     }
 
 }
@@ -118,21 +138,21 @@ def settings(client):
             '/language - language selection = ' + str(client.settings['language']) + '\n'
             '/UTC - Set your time at UTC = ' + str(client.settings['UTC']) + '\n'
             '/inverting - Swap the weekly schedule = ' + str(client.position['week even']) + '\n'
-            '/notification - Turn on the visions = ' + str(client.position['week even']) + '\n'
+            '/notification - Turn on notifications = ' + str(client.settings['notification']) + '\n'
             '/time - Set the time for seeing = ' + str(client.time) + '\n',
         'ua': 'Налаштування: \n'
             '/merger - Злиття тижнів = ' + str(client.settings['combination of weeks']) + '\n'
             '/language - Вибір мови = ' + str(client.settings['language']) + '\n'
             '/UTC - Встановити ваш час по UTC = ' + str(client.settings['UTC']) + '\n'
             '/inverting - Поміняти місцями розклад тижнів = ' + str(client.position['week even']) + '\n'
-            '/notification - Включення увідомленій = ' + str(client.position['week even']) + '\n'
+            '/notification - Включення увідомленій = ' + str(client.settings['notification']) + '\n'
             '/time - Встановити час увідомленія = ' + str(client.time) + '\n',
-        'ru': 'Settings: \n'
+        'ru': 'Настройки: \n'
             '/merger - Слияние недель = ' + str(client.settings['combination of weeks']) + '\n'
             '/language - Выбор языка = ' + str(client.settings['language']) + '\n'
             '/UTC - Установить ваше время по UTC = ' + str(client.settings['UTC']) + '\n'
             '/inverting - Поменять местами расписание недель = ' + str(client.position['week even']) + '\n'
-            '/notification - Turn on the visions = ' + str(client.position['week even']) + '\n'
+            '/notification - Включение уведомлений = ' + str(client.settings['notification']) + '\n'
             '/time - Установить время увидомления = ' + str(client.time) + '\n'
     }
     return user_settings[client.settings['language']]

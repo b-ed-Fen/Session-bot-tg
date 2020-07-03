@@ -8,7 +8,7 @@ import copy
 
 def set_schedule(name):
     try:
-        file = open('temp/' + str(name) + '.txt', 'r')
+        file = open('temp/' + str(name) + '.txt', 'r', encoding='utf-8')
     except Exception as e:
         answer = []
         return 'Oops! \n' + str(e)
@@ -67,11 +67,18 @@ def get_even():  # True - Четная; False - Не четная
 
 
 couples_schedule = {
-    1: '8 30',
-    2: '10 10',
-    3: '11 50',
-    4: '14 00',
-    5: '15 40',
+    1: '8:30',
+    2: '10:10',
+    3: '11:50',
+    4: '14:00',
+    5: '15:40',
+    6: '15:40',
+    7: '15:40',
+    8: '15:40',
+    9: '15:40',
+    10: '15:40',
+    11: '15:40',
+    12: '15:40',
 }
 
 '''

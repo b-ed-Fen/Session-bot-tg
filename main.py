@@ -17,29 +17,48 @@ import tools
 
 
 def daily_schedule(client, w, d):
-    answer = ''
-    on_account = 0
-    #                                    UTC 0                         пользовательский UTC
-    localtime = datetime.now() + timedelta(minutes=-180) + timedelta(minutes=client.settings['UTC'] * 60)
+    try:
+        if client.position['week even']:
+            if w == 0:
+                w = 1
+            else:
+                w = 0
 
-    for i in client.schedule[w][d - 1]:
-        on_account = on_account + 1
-        if localtime.strftime('%H %M') == tools.couples_schedule[on_account]:
-            answer = answer + '→' + ' \t '
-        else:
-            answer = answer + tools.couples_schedule[on_account] + ' \t  '
-        answer = answer + str(i) + '\n'
+        if client.settings['combination of weeks']:
+            w = 0
+
+        answer = ''
+        on_account = 0
+        #                                    UTC 0                         пользовательский UTC
+        localtime = datetime.now() + timedelta(minutes=-180) + timedelta(minutes=client.settings['UTC'] * 60)
+
+        for i in client.schedule[w][d - 1]:
+            on_account = on_account + 1
+            if localtime.strftime('%H:%M') == tools.couples_schedule[on_account]:
+                answer = answer + '→' + ' \t '
+            else:
+                answer = answer + tools.couples_schedule[on_account] + ' \t  '
+            answer = answer + str(i) + '\n'
+    except Exception as e:
+        answer = 'Wowps! We had a problem reading your schedule, I only know that: ' + str(e)
+
     return answer
 
 
 def information_line(client, w, d):
+    if client.position['week even']:
+        if w == 0:
+            w = 1
+        else:
+            w = 0
+
     localtime = datetime.now() + timedelta(minutes=-180) + timedelta(minutes=client.settings['UTC'] * 60)
     answer = localtime.strftime('%H:%M') + ' | ' + languages.assembly['week day'][client.settings['language']][d] \
              + ' | ' + languages.assembly['week even'][client.settings['language']][w]
     return answer
 
 
-token = '1206596318:AAH_n8Uz71KIGJHqpv_dFN5fz3aJ15Dkspk'
+token = 'TOKEN'
 update = Updater(token, use_context=True)
 bot = telebot.TeleBot(token)
 job = update.job_queue
@@ -49,7 +68,13 @@ users = []
 
 def notification():
     while True:
-        # bot.send_message(user_id, 'notification')
+        for client in users:
+            localtime = datetime.now() + timedelta(minutes=-180) + timedelta(minutes=client.settings['UTC'] * 60)
+            if client.settings['notification'] and client.time == localtime.strftime('%H:%M'):
+                bot.send_message(client.id,
+                                 information_line(client, int(tools.get_even()), datetime.today().isoweekday()) + '\n' +
+                                 daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
+
         time.sleep(60)
 
 
@@ -171,6 +196,29 @@ def merger(message):
                          reply_markup=connection_weeks)
 
 
+@bot.message_handler(commands=['notification'])
+def notification_ui(message):
+    # включить увидомления
+    global users
+    find = tools.find_and_cut(users, message.chat.id)
+    client = find[1]
+
+    if client == 0:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ua'])
+    else:
+        connection_weeks = types.InlineKeyboardMarkup()
+        connection_weeks_yes = types.InlineKeyboardButton(text=languages.assembly['yes'][client.settings['language']],
+                                                          callback_data='notification on yes')
+        connection_weeks_no = types.InlineKeyboardButton(text=languages.assembly['no'][client.settings['language']],
+                                                         callback_data='notification on no')
+        connection_weeks.add(connection_weeks_no, connection_weeks_yes, )
+
+        bot.send_message(message.chat.id,
+                         languages.assembly['notification'][client.settings['language']],
+                         reply_markup=connection_weeks)
+
+
 @bot.message_handler(commands=['settings'])
 def settings(message):
     global users
@@ -187,7 +235,7 @@ def settings(message):
 
 
 @bot.message_handler(commands=['UTC'])
-def settings(message):
+def utc(message):
     global users
     find = tools.find_and_cut(users, message.chat.id)
     client = find[1]
@@ -197,10 +245,40 @@ def settings(message):
                          languages.assembly['not in the database']['ua'])
     else:
         users = find[0]  # удаление пользователя для его замены
-        languages.client = client
         bot.send_message(message.chat.id,
                          languages.assembly['choose a utc'][client.settings['language']])
         client = tools.people_can_change(client, 'position', 'last message', 'utc')
+        users.append(client)
+
+
+@bot.message_handler(commands=['today'])
+def today(message):
+    global users
+    find = tools.find_and_cut(users, message.chat.id)
+    client = find[1]
+
+    if client == 0:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ua'])
+    else:
+        bot.send_message(message.chat.id,
+                         information_line(client, int(tools.get_even()), datetime.today().isoweekday()) + '\n' +
+                         daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
+
+
+@bot.message_handler(commands=['time'])
+def time_ui(message):
+    global users
+    find = tools.find_and_cut(users, message.chat.id)
+    client = find[1]
+
+    if client == 0:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ua'])
+    else:
+        users = find[0]  # удаление пользователя для его замены
+        bot.send_message(message.chat.id, 'Enter the time in format "13:03"')
+        client = tools.people_can_change(client, 'position', 'last message', 'time')
         users.append(client)
 
 
@@ -212,13 +290,26 @@ def text(message):
     if client != 0:
 
         if client.position['last message'] == 'utc':
-
+            # установить utc
             try:
                 client = tools.people_can_change(client, 'settings', 'UTC', float(message.text))
                 users = find[0]  # удаление пользователя для его замены
-                users.append(client)
                 bot.send_message(message.chat.id,
-                                 'Готово! Тепер ваш регіон UTC =' + ' ' + str(client.settings['UTC']))
+                                 'Done! Now your UTC =' + ' ' + str(client.settings['UTC']))
+                client = tools.people_can_change(client, 'position', 'last message', 'null')
+                users.append(client)
+
+            except Exception as e:
+                bot.send_message(message.chat.id, str(e))
+
+        if client.position['last message'] == 'time':
+            # установить время
+            try:
+                datetime.strptime(str(message.text), '%H:%M').date()  # если что-то пойдет не так то выкенет Exception
+                client = tools.people_can_change(client, 'time', 0, str(message.text))
+                users = find[0]  # удаление пользователя для его замены
+                bot.send_message(message.chat.id,
+                                 'Done! I will remind you of your schedule for today in ' + ' ' + str(client.time))
                 client = tools.people_can_change(client, 'position', 'last message', 'null')
                 users.append(client)
 
@@ -302,6 +393,28 @@ def callback_worker(call):
                 if call.data == 'swap schedule no':
                     bot.answer_callback_query(callback_query_id=call.id,
                                               text='Parity and non-parity have changed: False')
+
+            else:
+                bot.answer_callback_query(callback_query_id=call.id,
+                                          text=languages.assembly['been selected'][client.settings['language']])
+
+        # включить уведомления
+        if call.data == 'notification on yes' or call.data == 'notification on no':
+            past = client.settings['notification']
+            if call.data == 'notification on yes':
+                client = tools.people_can_change(client, 'settings', 'notification', True)
+                users.append(client)
+            elif call.data == 'notification on no':
+                client = tools.people_can_change(client, 'settings', 'notification', False)
+                users.append(client)
+
+            if call.data != past:
+                if call.data == 'notification on yes':
+                    bot.answer_callback_query(callback_query_id=call.id,
+                                              text='Notifications are included: True')
+                if call.data == 'notification on no':
+                    bot.answer_callback_query(callback_query_id=call.id,
+                                              text='Notifications are included: False')
 
             else:
                 bot.answer_callback_query(callback_query_id=call.id,
