@@ -1,19 +1,17 @@
+import copy
 import datetime
-from datetime import datetime, date, timedelta
+import threading
 import time
-from time import gmtime, strftime
-import telepot
+from datetime import datetime, date, timedelta
+
 import telebot
 from telebot import types
-import telegram.ext
 from telegram.ext import Updater
-import os
-import threading
-import copy
 
+import connection
 import languages
-import user
 import tools
+import user
 
 
 def daily_schedule(client, w, d):
@@ -34,8 +32,9 @@ def daily_schedule(client, w, d):
 
         for i in client.schedule[w][d - 1]:
             on_account = on_account + 1
-            if localtime.strftime('%H:%M') == tools.couples_schedule[on_account]:
-                answer = answer + '→' + ' \t '
+            if tools.couples_schedule[on_account] < localtime.strftime('%H:%M') < tools.couples_schedule[
+                on_account + 1]:
+                answer = answer + '      → ' + ' \t '
             else:
                 answer = answer + tools.couples_schedule[on_account] + ' \t  '
             answer = answer + str(i) + '\n'
@@ -53,8 +52,9 @@ def information_line(client, w, d):
             w = 0
 
     localtime = datetime.now() + timedelta(minutes=-180) + timedelta(minutes=client.settings['UTC'] * 60)
-    answer = localtime.strftime('%H:%M') + ' | ' + languages.assembly['week day'][client.settings['language']][d] \
-             + ' | ' + languages.assembly['week even'][client.settings['language']][w]
+    answer = localtime.strftime('%H:%M') + ' | ' + \
+             languages.assembly['week day'][client.settings['language']][d] + \
+             ' | ' + languages.assembly['week even'][client.settings['language']][w]
     return answer
 
 
@@ -63,7 +63,7 @@ update = Updater(token, use_context=True)
 bot = telebot.TeleBot(token)
 job = update.job_queue
 
-users = []
+users = connection.get_array_user()
 
 
 def notification():
@@ -78,12 +78,23 @@ def notification():
         time.sleep(60)
 
 
+def data_update():
+    while True:
+        connection.Update(users)
+        print('database has been updated')
+        time.sleep(600)
+
+
 # выбор языка
 language_selection = types.InlineKeyboardMarkup()
 eng_button = types.InlineKeyboardButton(text="🇺🇸", callback_data='us')
 ukr_button = types.InlineKeyboardButton(text="🇺🇦", callback_data='ua')
 rus_button = types.InlineKeyboardButton(text="🇷🇺", callback_data='ru')
 language_selection.add(eng_button, ukr_button, rus_button)
+
+# кнопки расписания
+keyboard = telebot.types.ReplyKeyboardMarkup(True)
+keyboard.row('/yesterday', '/today', '/tomorrow')
 
 
 @bot.message_handler(commands=['start'])
@@ -98,7 +109,7 @@ def start(message):
 
     bot.send_message(message.chat.id,
                      languages.assembly['hi'][client.settings['language']] + ' ' + client.name + '.\n' + \
-                     languages.assembly['greeting'][client.settings['language']])
+                     languages.assembly['greeting'][client.settings['language']], reply_markup=keyboard)
 
     bot.send_message(message.chat.id,
                      languages.assembly['choose a language'][client.settings['language']],
@@ -242,13 +253,30 @@ def utc(message):
 
     if client == 0:
         bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
     else:
         users = find[0]  # удаление пользователя для его замены
         bot.send_message(message.chat.id,
                          languages.assembly['choose a utc'][client.settings['language']])
         client = tools.people_can_change(client, 'position', 'last message', 'utc')
         users.append(client)
+
+
+@bot.message_handler(commands=['yesterday'])
+def yesterday(message):
+    global users
+    find = tools.find_and_cut(users, message.chat.id)
+    client = find[1]
+
+    if client == 0:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ru'])
+    else:
+        bot.send_message(message.chat.id,
+                         information_line(client, int(tools.get_even()),
+                                          (date.today() - timedelta(days=1)).isoweekday()) + '\n' +
+                         daily_schedule(client, int(tools.get_even()),
+                                        (date.today() - timedelta(days=1)).isoweekday()))
 
 
 @bot.message_handler(commands=['today'])
@@ -259,11 +287,55 @@ def today(message):
 
     if client == 0:
         bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
     else:
         bot.send_message(message.chat.id,
                          information_line(client, int(tools.get_even()), datetime.today().isoweekday()) + '\n' +
                          daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
+
+
+@bot.message_handler(commands=['tomorrow'])
+def tomorrow(message):
+    global users
+    find = tools.find_and_cut(users, message.chat.id)
+    client = find[1]
+
+    if client == 0:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ru'])
+    else:
+        bot.send_message(message.chat.id,
+                         information_line(client, int(tools.get_even()),
+                                          (date.today() + timedelta(days=1)).isoweekday()) + '\n' +
+                         daily_schedule(client, int(tools.get_even()),
+                                        (date.today() + timedelta(days=1)).isoweekday()))
+
+
+@bot.message_handler(commands=['week'])
+def week_ui(message):
+    global users
+    find = tools.find_and_cut(users, message.chat.id)
+    client = find[1]
+
+    if client == 0:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ru'])
+    else:
+        navigation = types.InlineKeyboardMarkup()
+        week_back = types.InlineKeyboardButton(text='<', callback_data='week back')
+        week_forward = types.InlineKeyboardButton(text='>', callback_data='week forward')
+        navigation.add(week_back, week_forward)
+
+        if not client.settings['combination of weeks']:
+            week_another = types.InlineKeyboardButton(
+                text=languages.assembly['another'][client.settings['language']],
+                callback_data='week another')
+            navigation.add(week_another)
+
+        bot.send_message(message.chat.id,
+                         information_line(client, client.position['week'], client.position['day']) + '\n' +
+                         daily_schedule(client, client.position['week'], client.position['day']),
+                         reply_markup=navigation)
 
 
 @bot.message_handler(commands=['time'])
@@ -419,12 +491,56 @@ def callback_worker(call):
             else:
                 bot.answer_callback_query(callback_query_id=call.id,
                                           text=languages.assembly['been selected'][client.settings['language']])
+        # расписание на неделю
+        if call.data == 'week another' or call.data == 'week back' or call.data == 'week forward':
+            if call.data == 'week another':
+                if client.position['week'] == 0:
+                    client = tools.people_can_change(client, 'position', 'week', 1)
+                else:
+                    client = tools.people_can_change(client, 'position', 'week', 0)
+
+            if call.data == 'week back':
+                if client.position['day'] == 1:
+                    client = tools.people_can_change(client, 'position', 'day', 7)
+                else:
+                    client = tools.people_can_change(client, 'position', 'day', client.position['day'] - 1)
+
+            if call.data == 'week forward':
+                if client.position['day'] == 7:
+                    client = tools.people_can_change(client, 'position', 'day', 1)
+                else:
+                    client = tools.people_can_change(client, 'position', 'day', client.position['day'] + 1)
+
+            navigation = types.InlineKeyboardMarkup()  # пересобираем навигацию
+            week_back = types.InlineKeyboardButton(text='<', callback_data='week back')
+            week_forward = types.InlineKeyboardButton(text='>', callback_data='week forward')
+            navigation.add(week_back, week_forward)
+
+            if not client.settings['combination of weeks']:
+                week_another = types.InlineKeyboardButton(
+                    text=languages.assembly['another'][client.settings['language']],
+                    callback_data='week another')
+                navigation.add(week_another)
+
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text=information_line(client, client.position['week'],
+                                                        client.position['day']) + '\n' +
+                                       daily_schedule(client, client.position['week'], client.position['day']),
+                                  reply_markup=navigation)
+            users.append(client)
+
     else:
         bot.send_message(call.message.chat.id,
                          languages.assembly['not in the database']['ua'])
 
 
-th = threading.Thread(target=notification)
-th.daemon = True
-th.start()
+th_notigic = threading.Thread(target=notification)
+th_db = threading.Thread(target=data_update)
+
+th_notigic.daemon = True
+th_notigic.start()
+
+th_db.daemon = True
+th_db.start()
+
 bot.polling(none_stop=True)

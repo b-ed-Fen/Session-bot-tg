@@ -6,14 +6,7 @@ import user
 import copy
 
 
-def set_schedule(name):
-    try:
-        file = open('temp/' + str(name) + '.txt', 'r', encoding='utf-8')
-    except Exception as e:
-        answer = []
-        return 'Oops! \n' + str(e)
-
-    message = file.read()
+def set_schedule_arr(message):
     answer = []
     temp = ''
     temp_d = []
@@ -36,23 +29,125 @@ def set_schedule(name):
             temp = temp + i
             number_of_blank_lines = 0
 
+    return answer
+
+
+def set_schedule(name):
+    try:
+        file = open('temp/' + str(name) + '.txt', 'r', encoding='utf-8')
+    except Exception as e:
+        answer = []
+        return 'Oops! \n' + str(e)
+
+    message = file.read()
+
+    answer = set_schedule_arr(message)
+
     file.close()
     os.remove('temp/' + str(name) + '.txt')
     return answer
 
 
-def get_schedule(id, array):
-    file = open('temp/' + str(id) + '.txt', 'w')
-    temp = ''
+def get_schedule_text(array):
+    answer = ''
 
     for i in array:
         for j in i:
             for k in j:
-                temp = temp + str(k) + '\n'
-            temp = temp + '\n'
-        temp = temp + '\n'
-    file.write(temp)
+                answer += str(k) + '\n'
+            answer += '\n'
+        answer += '\n'
+    return answer
+
+
+def get_schedule(id, array):
+    file = open('temp/' + str(id) + '.txt', 'w')
+
+    answer = get_schedule_text(array)
+
+    file.write(answer)
     file.close()
+
+
+def get_settings(settings):
+    answer = ''
+    for i in settings.values():
+        answer += str(i) + '\n'
+
+    return answer
+
+
+def get_position(position):
+    answer = ''
+    for i in position.values():
+        answer += str(i) + '\n'
+
+    return answer
+
+
+def set_settings(text):
+    notification = False
+    combination_of_weeks = False
+    language = 'us'
+    UTC = 0
+    c = 0
+    temp = ''
+    for i in text:
+        if i == '\n':
+            c += 1
+            if c == 1:
+                notification = bool(temp)
+            if c == 2:
+                combination_of_weeks = bool(temp)
+            if c == 3:
+                language = str(temp)
+            if c == 4:
+                UTC = float(temp)
+            temp = ''
+        else:
+            temp += i
+
+    answer = {
+        'notification': notification,  # уведомление (Да/Нет)
+        'combination of weeks': combination_of_weeks,  # совместить расписание в одну неделю (Да/Нет)
+        'language': language,  # язык
+        'UTC': UTC
+    }
+
+    return answer
+
+
+def set_position(text):
+    last_message = 'null'
+    week_even = False
+    day = 1
+    week = 0
+    c = 0
+    temp = ''
+    for i in text:
+        if i == '\n':
+            c += 1
+            if c == 1:
+                last_message = str(temp)
+            if c == 2:
+                week_even = bool(temp)
+            if c == 3:
+                day = int(temp)
+            if c == 4:
+                week = int(temp)
+            temp = ''
+        else:
+            temp += i
+
+    answer = {  # позиция пользователя
+        'last message': last_message,
+        'week even': week_even,
+        'day': day,
+        'week': week
+    }
+
+    return answer
+
 
 
 def get_even():  # True - Четная; False - Не четная
@@ -67,7 +162,7 @@ def get_even():  # True - Четная; False - Не четная
 
 
 couples_schedule = {
-    1: '8:30',
+    1: '08:30',
     2: '10:10',
     3: '11:50',
     4: '14:00',
@@ -148,6 +243,8 @@ def people_can_change(user_obj, change, parameter, value):
             position['week even'] = value
         elif parameter == 'day':
             position['day'] = value
+        elif parameter == 'week':
+            position['week'] = value
 
     client = user.user(id=id, name=name, surname=surname, schedule=schedule,
                        time=time, settings=settings, position=position)
