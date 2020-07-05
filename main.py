@@ -29,15 +29,19 @@ def daily_schedule(client, w, d):
         answer = ''
         on_account = 0
         #                                    UTC 0                         пользовательский UTC
-        localtime = datetime.now() + timedelta(minutes=-180) + timedelta(minutes=client.settings['UTC'] * 60)
+        localtime = datetime.now() + timedelta(minutes=0) + timedelta(minutes=client.settings['UTC'] * 60)
 
         for i in client.schedule[w][d - 1]:
             on_account = on_account + 1
-            if tools.couples_schedule[on_account] < localtime.strftime('%H:%M') < tools.couples_schedule[
-                on_account + 1]:
-                answer = answer + '      → ' + ' \t '
+            if client.settings['Time instead of number']:
+                if tools.couples_schedule[on_account] < localtime.strftime('%H:%M') < tools.couples_schedule[on_account + 1]:
+                    answer = answer + '      → ' + ' \t '
+                else:
+                    answer = answer + tools.couples_schedule[on_account] + ' \t  '
+
             else:
-                answer = answer + tools.couples_schedule[on_account] + ' \t  '
+                answer = answer + str(on_account) + ':  ' + ' \t  '
+
             answer = answer + str(i) + '\n'
     except Exception as e:
         answer = 'Wowps! We had a problem reading your schedule, I only know that: ' + str(e)
@@ -268,15 +272,18 @@ def yesterday(message):
     global users
     find = tools.find_and_cut(users, message.chat.id)
     client = find[1]
-
+    w = int(tools.get_even())
     if client == 0:
         bot.send_message(message.chat.id,
                          languages.assembly['not in the database']['ru'])
     else:
+        if date.today().isoweekday() == 1:
+            w = int(not tools.get_even())
+
         bot.send_message(message.chat.id,
-                         information_line(client, int(tools.get_even()),
+                         information_line(client, w,
                                           (date.today() - timedelta(days=1)).isoweekday()) + '\n' +
-                         daily_schedule(client, int(tools.get_even()),
+                         daily_schedule(client, w,
                                         (date.today() - timedelta(days=1)).isoweekday()))
 
 
@@ -300,15 +307,19 @@ def tomorrow(message):
     global users
     find = tools.find_and_cut(users, message.chat.id)
     client = find[1]
+    w = int(tools.get_even())
 
     if client == 0:
         bot.send_message(message.chat.id,
                          languages.assembly['not in the database']['ru'])
     else:
+        if date.today().isoweekday() == 7:
+            w = int(not tools.get_even())
+
         bot.send_message(message.chat.id,
-                         information_line(client, int(tools.get_even()),
+                         information_line(client, w,
                                           (date.today() + timedelta(days=1)).isoweekday()) + '\n' +
-                         daily_schedule(client, int(tools.get_even()),
+                         daily_schedule(client, w,
                                         (date.today() + timedelta(days=1)).isoweekday()))
 
 
@@ -353,6 +364,29 @@ def time_ui(message):
         bot.send_message(message.chat.id, 'Enter the time in format "13:03"')
         client = tools.people_can_change(client, 'position', 'last message', 'time')
         users.append(client)
+
+
+@bot.message_handler(commands=['torn'])
+def torn_ui(message):
+    # включить увидомления
+    global users
+    find = tools.find_and_cut(users, message.chat.id)
+    client = find[1]
+
+    if client == 0:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ua'])
+    else:
+        torn = types.InlineKeyboardMarkup()
+        torn_yes = types.InlineKeyboardButton(text=languages.assembly['yes'][client.settings['language']],
+                                              callback_data='torn on yes')
+        torn_no = types.InlineKeyboardButton(text=languages.assembly['no'][client.settings['language']],
+                                             callback_data='torn on no')
+        torn.add(torn_no, torn_yes)
+
+        bot.send_message(message.chat.id,
+                         languages.assembly['torn'][client.settings['language']],
+                         reply_markup=torn)
 
 
 @bot.message_handler(content_types=['text'])
@@ -529,6 +563,28 @@ def callback_worker(call):
                                        daily_schedule(client, client.position['week'], client.position['day']),
                                   reply_markup=navigation)
             users.append(client)
+
+        if call.data == 'torn on no' or call.data == 'torn on yes':
+            past = client.settings['Time instead of number']
+            if call.data == 'torn on yes':
+                client = tools.people_can_change(client, 'settings', 'Time instead of number', True)
+
+            elif call.data == 'torn on no':
+                client = tools.people_can_change(client, 'settings', 'Time instead of number', False)
+
+            users.append(client)
+
+            if call.data != past:
+                if call.data == 'torn on yes':
+                    bot.answer_callback_query(callback_query_id=call.id,
+                                              text='Time instead of number: True')
+                if call.data == 'torn on no':
+                    bot.answer_callback_query(callback_query_id=call.id,
+                                              text='Time instead of number: False')
+
+            else:
+                bot.answer_callback_query(callback_query_id=call.id,
+                                          text=languages.assembly['been selected'][client.settings['language']])
 
     else:
         bot.send_message(call.message.chat.id,

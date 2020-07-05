@@ -90,6 +90,7 @@ def set_settings(text):
     combination_of_weeks = False
     language = 'us'
     UTC = 0
+    time_instead_of_number = False
     c = 0
     temp = ''
     for i in text:
@@ -103,6 +104,8 @@ def set_settings(text):
                 language = str(temp)
             if c == 4:
                 UTC = float(temp)
+            if c == 5:
+                time_instead_of_number = bool(temp)
             temp = ''
         else:
             temp += i
@@ -111,7 +114,8 @@ def set_settings(text):
         'notification': notification,  # уведомление (Да/Нет)
         'combination of weeks': combination_of_weeks,  # совместить расписание в одну неделю (Да/Нет)
         'language': language,  # язык
-        'UTC': UTC
+        'UTC': UTC,
+        'Time instead of number': time_instead_of_number
     }
 
     return answer
@@ -167,13 +171,11 @@ couples_schedule = {
     3: '11:50',
     4: '14:00',
     5: '15:40',
-    6: '15:40',
-    7: '15:40',
-    8: '15:40',
-    9: '15:40',
-    10: '15:40',
-    11: '15:40',
-    12: '15:40',
+    6: '17:20',
+    7: '19:00',
+    8: '20:40',
+    9: '22:20',
+    10: '00:00'
 }
 
 '''
@@ -236,6 +238,8 @@ def people_can_change(user_obj, change, parameter, value):
             settings['language'] = value
         elif parameter == 'UTC':
             settings['UTC'] = value
+        elif parameter == 'Time instead of number':
+            settings['Time instead of number'] = value
     elif change == 'position':
         if parameter == 'last message':
             position['last message'] = value

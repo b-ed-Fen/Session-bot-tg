@@ -59,6 +59,12 @@ assembly = {
         'ru': 'Включить ежедневные уведомления?'
     },
 
+    'torn': {
+        'us': 'Want to see time on your schedule instead of class numbers?',
+        'ua': 'Хочете бачити в своєму розкладі час замість номерів занять?',
+        'ru': 'Хотите видеть в своем расписании время вместо номеров занятий?'
+    },
+
     'week even': {
         'us': {
             0: 'week: Even',
@@ -145,14 +151,16 @@ def settings(client):
             '/UTC - Set your time at UTC = ' + str(client.settings['UTC']) + '\n'
             '/inverting - Swap the weekly schedule = ' + str(client.position['week even']) + '\n'
             '/notification - Turn on notifications = ' + str(client.settings['notification']) + '\n'
-            '/time - Set the time for seeing = ' + str(client.time) + '\n',
+            '/time - Set the time for seeing = ' + str(client.time) + '\n'
+            '/torn - Time instead of numbers in the schedule = ' + str(client.settings['Time instead of number']) + '\n',
         'ua': 'Налаштування: \n'
             '/merger - Злиття тижнів = ' + str(client.settings['combination of weeks']) + '\n'
             '/language - Вибір мови = ' + str(client.settings['language']) + '\n'
             '/UTC - Встановити ваш час по UTC = ' + str(client.settings['UTC']) + '\n'
             '/inverting - Поміняти місцями розклад тижнів = ' + str(client.position['week even']) + '\n'
             '/notification - Включення увідомленій = ' + str(client.settings['notification']) + '\n'
-            '/time - Встановити час увідомленія = ' + str(client.time) + '\n',
+            '/time - Встановити час увідомленія = ' + str(client.time) + '\n'
+            '/torn - Час замість цифр в розкладі = ' + str(client.settings['Time instead of number']) + '\n',
         'ru': 'Настройки: \n'
             '/merger - Слияние недель = ' + str(client.settings['combination of weeks']) + '\n'
             '/language - Выбор языка = ' + str(client.settings['language']) + '\n'
@@ -160,6 +168,7 @@ def settings(client):
             '/inverting - Поменять местами расписание недель = ' + str(client.position['week even']) + '\n'
             '/notification - Включение уведомлений = ' + str(client.settings['notification']) + '\n'
             '/time - Установить время увидомления = ' + str(client.time) + '\n'
+            '/torn - Время вместо цифр в расписании = ' + str(client.settings['Time instead of number']) + '\n'
     }
     return user_settings[client.settings['language']]
 
