@@ -3,6 +3,7 @@ import datetime
 import threading
 import time
 from datetime import datetime, date, timedelta
+import os
 
 import telebot
 from telebot import types
@@ -58,7 +59,7 @@ def information_line(client, w, d):
     return answer
 
 
-token = 'TOKEN'
+token = os.environ.get("TOKEN")
 update = Updater(token, use_context=True)
 bot = telebot.TeleBot(token)
 job = update.job_queue
