@@ -8,9 +8,12 @@ assembly = {
     },
 
     'greeting': {
-        'us': 'Glad to welcome you! I can come in handy in your dungeon at school or university :3',
-        'ua': 'Радий тебе вітати! Я можу тобі знадобиться в твоєму проходженні Данжі в школі або універі: 3',
-        'ru': 'Рад тебя приветствовать! Я могу тебе пригодится в твоем прохождении данжа в школе или универе :3'
+        'us': 'Glad to welcome you! I can come in handy in your dungeon at school or university :3\nWrite /help for '
+              'more information',
+        'ua': 'Радий тебе вітати! Я можу тобі знадобиться в твоєму проходженні Данжі в школі або універі: 3\nДля '
+              'додаткової інформації напиши / help',
+        'ru': 'Рад тебя приветствовать! Я могу тебе пригодится в твоем прохождении данжа в школе или универе :3\nДля '
+              'дополнительной информации напиши /help '
 
     },
 
@@ -37,14 +40,14 @@ assembly = {
 
     'swap schedule': {
         'us': 'Swap even and non-even schedules?',
-        'ua': 'Поміняти місцями парну і не парне розклад?',
-        'ru': 'Поменять местами четную и не четное расписание?'
+        'ua': 'Поміняти місцями парну і не парну недiлю?',
+        'ru': 'Поменять местами четную и нечетную неделю?'
     },
 
     'choose a language': {
         'us': 'Choose a language',
         'ua': 'Оберіть мову',
-        'ru': 'Выберете язык'
+        'ru': 'Выберите язык'
     },
 
     'choose a utc': {
@@ -56,36 +59,36 @@ assembly = {
     'notification': {
         'us': 'Enable daily notifications?',
         'ua': 'Включити щоденні повідомлення?',
-        'ru': 'Включить ежедневные уведомления?'
+        'ru': 'Включить ежедневные уведомлений?'
     },
 
     'torn': {
-        'us': 'Want to see time on your schedule instead of class numbers?',
-        'ua': 'Хочете бачити в своєму розкладі час замість номерів занять?',
-        'ru': 'Хотите видеть в своем расписании время вместо номеров занятий?'
+        'us': 'Want to see time in your schedule instead of class number?',
+        'ua': 'Хочете бачити в своєму розкладі час замість номера занять?',
+        'ru': 'Хотите видеть в своем расписании время вместо номера занятия?'
     },
 
     'week even': {
         'us': {
-            0: 'week: Even',
-            1: 'week: Not even'
+            0: 'Week: Even',
+            1: 'Week: Not even'
         },
 
         'ua': {
-            0: 'тиждень: Парна',
-            1: 'тиждень: Не парна',
+            0: 'Тиждень: Парна',
+            1: 'Тиждень: Непарна',
         },
 
         'ru': {
-            0: 'неделя: Четная',
-            1: 'неделя: Не четная'
+            0: 'Неделя: Четная',
+            1: 'Неделя: Нечетная'
         }
     },
 
     'received': {
-        'us': 'received!',
-        'ua': 'прийнято!',
-        'ru': 'принято!',
+        'us': 'Received!',
+        'ua': 'Прийнято!',
+        'ru': 'Принято!',
 
     },
 
@@ -138,6 +141,39 @@ assembly = {
         'us': 'another week',
         'ua': 'інший тиждень',
         'ru': 'другая неделя'
+    },
+
+    'help': {
+        'us': 'How to create your own schedule? \nCreate and open a .txt file, enter the schedule line by line '
+              'dividing the lessons with one press of Enter. With two presses of Enter, separate the days of the '
+              'week, with three presses complete the schedule of the week. In cases of using an even and odd week, '
+              'repeat the same actions for the next week. Paying attention that in the filling we use the format of '
+              'week 7, if there is no “empty” class on one day, the day is filled with a space. To get the template '
+              'file, enter /template.',
+        'ua': 'Як створити свій розклад? \nСоздаем і відкриваємо .txt файл, вводите розклад через підрядник '
+              'розділяючи заняття одним натисканням Enter. Двома натисканнями Enter поділяєте дні тижня, '
+              'трьома натисканнями завершите розклад тижні. У випадки використання парній і непарній тижні повторюєте '
+              'такі ж дії на стежить тиждень. Звертаючи увагу що в заповненні використовуємо формат тижні 7, '
+              'якщо занять в якийсь день немає «порожній» день заповнюється прогалиною. Для отримання файлу шаблону '
+              'введіть /template.',
+        'ru': 'Как создать своё расписание?\nСоздаем и открываем .txt файл, вводите расписание построчно разделяя '
+              'занятия одним нажатием Enter. Двумя нажатиями Enter разделяете дни недели, тремя нажатиями завершите '
+              'расписание недели. В случаи использования четной и нечетной недели повторяете такие же действия на '
+              'следящую неделю. Обращая внимание что в заполнении используем формат недели 7, если занятий в какой-то '
+              'день нет «пустой» день заполняется пробелом. Для получения файла шаблона введите /template. '
+
+    },
+
+    'enter time': {
+        'us': 'Enter the time in format "08:30"',
+        'ua': 'Введіть час у форматі "08:30"',
+        'ru': 'Введите время в формате "08:30"'
+    },
+
+    'done time': {
+        'us': 'Done! Now I will remind the schedule every day in',
+        'ua': 'Готово! Тепер я буду напомінати розпис кожного дня у',
+        'ru': 'Готово! Теперь я буду напоминать расписание каждый день в'
     }
 
 }
@@ -159,15 +195,15 @@ def settings(client):
             '/UTC - Встановити ваш час по UTC = ' + str(client.settings['UTC']) + '\n'
             '/inverting - Поміняти місцями розклад тижнів = ' + str(client.position['week even']) + '\n'
             '/notification - Включення увідомленій = ' + str(client.settings['notification']) + '\n'
-            '/time - Встановити час увідомленія = ' + str(client.time) + '\n'
+            '/time - Встановити час повідомлення = ' + str(client.time) + '\n'
             '/torn - Час замість цифр в розкладі = ' + str(client.settings['Time instead of number']) + '\n',
         'ru': 'Настройки: \n'
             '/merger - Слияние недель = ' + str(client.settings['combination of weeks']) + '\n'
             '/language - Выбор языка = ' + str(client.settings['language']) + '\n'
             '/UTC - Установить ваше время по UTC = ' + str(client.settings['UTC']) + '\n'
             '/inverting - Поменять местами расписание недель = ' + str(client.position['week even']) + '\n'
-            '/notification - Включение уведомлений = ' + str(client.settings['notification']) + '\n'
-            '/time - Установить время увидомления = ' + str(client.time) + '\n'
+            '/notification - Включение уведомления = ' + str(client.settings['notification']) + '\n'
+            '/time - Установить время уведомлений = ' + str(client.time) + '\n'
             '/torn - Время вместо цифр в расписании = ' + str(client.settings['Time instead of number']) + '\n'
     }
     return user_settings[client.settings['language']]

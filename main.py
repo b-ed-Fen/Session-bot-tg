@@ -28,8 +28,8 @@ def daily_schedule(client, w, d):
 
         answer = ''
         on_account = 0
-        #                                    UTC 0                         пользовательский UTC
-        localtime = datetime.now() + timedelta(minutes=0) + timedelta(minutes=client.settings['UTC'] * 60)
+        # + timedelta(minutes=0) ->  UTC 0              пользовательский UTC
+        localtime = datetime.now() + timedelta(minutes=client.settings['UTC'] * 60)
 
         for i in client.schedule[w][d - 1]:
             on_account = on_account + 1
@@ -100,6 +100,8 @@ language_selection.add(eng_button, ukr_button, rus_button)
 # кнопки расписания
 keyboard = telebot.types.ReplyKeyboardMarkup(True)
 keyboard.row('/yesterday', '/today', '/tomorrow')
+keyboard.row('/week')
+keyboard.row('/settings')
 
 
 @bot.message_handler(commands=['start'])
@@ -145,7 +147,7 @@ def handle_docs(message):
             users.append(client)
         else:
             bot.send_message(message.chat.id,
-                             languages.assembly['not in the database']['ua'])
+                             languages.assembly['not in the database']['ru'])
 
     except Exception as e:
         bot.reply_to(message, e)
@@ -159,7 +161,7 @@ def language(message):
 
     if client == 0:
         bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
     else:
         bot.send_message(message.chat.id,
                          languages.assembly['choose a language'][client.settings['language']],
@@ -176,7 +178,7 @@ def merger(message):
 
     if client == 0:
         bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
     else:
         connection_weeks = types.InlineKeyboardMarkup()
         connection_weeks_yes = types.InlineKeyboardButton(text=languages.assembly['yes'][client.settings['language']],
@@ -198,7 +200,7 @@ def merger(message):
 
     if client == 0:
         bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
     else:
         connection_weeks = types.InlineKeyboardMarkup()
         connection_weeks_yes = types.InlineKeyboardButton(text=languages.assembly['yes'][client.settings['language']],
@@ -221,7 +223,7 @@ def notification_ui(message):
 
     if client == 0:
         bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
     else:
         connection_weeks = types.InlineKeyboardMarkup()
         connection_weeks_yes = types.InlineKeyboardButton(text=languages.assembly['yes'][client.settings['language']],
@@ -243,7 +245,7 @@ def settings(message):
 
     if client == 0:
         bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
     else:
         languages.client = client
         bot.send_message(message.chat.id,
@@ -358,12 +360,39 @@ def time_ui(message):
 
     if client == 0:
         bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
     else:
         users = find[0]  # удаление пользователя для его замены
-        bot.send_message(message.chat.id, 'Enter the time in format "13:03"')
+        bot.send_message(message.chat.id, languages.assembly['enter time'][client.settings['language']])
         client = tools.people_can_change(client, 'position', 'last message', 'time')
         users.append(client)
+
+
+@bot.message_handler(commands=['help'])
+def help_ui(message):
+    find = tools.find_and_cut(users, message.chat.id)
+    client = find[1]
+
+    if client == 0:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ru'])
+    else:
+        bot.send_message(message.chat.id, languages.assembly['help'][client.settings['language']])
+
+
+@bot.message_handler(commands=['template'])
+def help_ui(message):
+    find = tools.find_and_cut(users, message.chat.id)
+    client = find[1]
+
+    if client == 0:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ru'])
+    else:
+        doc = open('temp/Шаблон расписания.txt', 'rb')
+        bot.send_document(message.chat.id, doc)
+        doc.close()
+
 
 
 @bot.message_handler(commands=['torn'])
@@ -375,7 +404,7 @@ def torn_ui(message):
 
     if client == 0:
         bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
     else:
         torn = types.InlineKeyboardMarkup()
         torn_yes = types.InlineKeyboardButton(text=languages.assembly['yes'][client.settings['language']],
@@ -416,7 +445,7 @@ def text(message):
                 client = tools.people_can_change(client, 'time', 0, str(message.text))
                 users = find[0]  # удаление пользователя для его замены
                 bot.send_message(message.chat.id,
-                                 'Done! I will remind you of your schedule for today in ' + ' ' + str(client.time))
+                                 languages.assembly['done time'][client.settings['language']] + ' ' + str(client.time))
                 client = tools.people_can_change(client, 'position', 'last message', 'null')
                 users.append(client)
 
@@ -424,7 +453,7 @@ def text(message):
                 bot.send_message(message.chat.id, str(e))
     else:
         bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -588,7 +617,7 @@ def callback_worker(call):
 
     else:
         bot.send_message(call.message.chat.id,
-                         languages.assembly['not in the database']['ua'])
+                         languages.assembly['not in the database']['ru'])
 
 
 th_notigic = threading.Thread(target=notification)
