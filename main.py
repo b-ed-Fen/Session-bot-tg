@@ -18,23 +18,20 @@ import user
 def daily_schedule(client, w, d):
     try:
         if client.position['week even']:
-            if w == 0:
-                w = 1
-            else:
-                w = 0
+            w = 1 if w == 0 else 0
 
         if client.settings['combination of weeks']:
             w = 0
 
         answer = ''
         on_account = 0
-        # + timedelta(minutes=0) ->  UTC 0              пользовательский UTC
+        #               UTC 0                         пользовательский UTC
         localtime = datetime.now() + timedelta(minutes=client.settings['UTC'] * 60)
 
         for i in client.schedule[w][d - 1]:
             on_account = on_account + 1
             if client.settings['Time instead of number']:
-                if tools.couples_schedule[on_account] < localtime.strftime('%H:%M') < tools.couples_schedule[on_account + 1]:
+                if tools.couples_schedule[on_account] <= localtime.strftime('%H:%M') < tools.couples_schedule[on_account + 1]:
                     answer = answer + '      → ' + ' \t '
                 else:
                     answer = answer + tools.couples_schedule[on_account] + ' \t  '
@@ -51,15 +48,27 @@ def daily_schedule(client, w, d):
 
 def information_line(client, w, d):
     if client.position['week even']:
-        if w == 0:
-            w = 1
-        else:
-            w = 0
+        w = 1 if w == 0 else 0
+    #               UTC 0                         пользовательский UTC
+    localtime = datetime.now() + timedelta(minutes=client.settings['UTC'] * 60)
 
-    localtime = datetime.now() + timedelta(minutes=-180) + timedelta(minutes=client.settings['UTC'] * 60)
-    answer = localtime.strftime('%H:%M') + ' | ' + \
-             languages.assembly['week day'][client.settings['language']][d] + \
-             ' | ' + languages.assembly['week even'][client.settings['language']][w]
+    answer = localtime.strftime('%H:%M') + ' | ' + languages.assembly['week day'][client.settings['language']][d]
+
+    if not client.settings['combination of weeks']:
+        answer += ' | ' + languages.assembly['week even'][client.settings['language']][w]
+
+    return answer
+
+
+def information_line_daily(client, w, d):
+    if client.position['week even']:
+        w = 1 if w == 0 else 0
+
+    answer = languages.assembly['wish of the day'][client.settings['language']][d] + ', ' + client.name \
+
+    if not client.settings['combination of weeks']:
+        answer += ' | ' + languages.assembly['week even'][client.settings['language']][w]
+
     return answer
 
 
@@ -77,8 +86,8 @@ def notification():
             localtime = datetime.now() + timedelta(minutes=-180) + timedelta(minutes=client.settings['UTC'] * 60)
             if client.settings['notification'] and client.time == localtime.strftime('%H:%M'):
                 bot.send_message(client.id,
-                                 information_line(client, int(tools.get_even()), datetime.today().isoweekday()) + '\n' +
-                                 daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
+                                 information_line_daily(client, int(tools.get_even()), datetime.today().isoweekday()) +
+                                 '\n' + daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
 
         time.sleep(60)
 
@@ -87,7 +96,7 @@ def data_update():
     while True:
         connection.Update(users)
         print('database has been updated')
-        time.sleep(600)
+        time.sleep(60)
 
 
 # выбор языка
@@ -101,7 +110,6 @@ language_selection.add(eng_button, ukr_button, rus_button)
 keyboard = telebot.types.ReplyKeyboardMarkup(True)
 keyboard.row('/yesterday', '/today', '/tomorrow')
 keyboard.row('/week')
-keyboard.row('/settings')
 
 
 @bot.message_handler(commands=['start'])
@@ -431,7 +439,8 @@ def text(message):
                 client = tools.people_can_change(client, 'settings', 'UTC', float(message.text))
                 users = find[0]  # удаление пользователя для его замены
                 bot.send_message(message.chat.id,
-                                 'Done! Now your UTC =' + ' ' + str(client.settings['UTC']))
+                                 languages.assembly['done utc'][client.settings['language']] + ' ' +
+                                 str(client.settings['UTC']) + '.')
                 client = tools.people_can_change(client, 'position', 'last message', 'null')
                 users.append(client)
 

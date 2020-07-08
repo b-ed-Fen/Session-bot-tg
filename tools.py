@@ -161,8 +161,8 @@ def get_even():  # True - Четная; False - Не четная
     d = time.strptime(w, "%d %b %Y")
 
     if (int(strftime("%U", d)) % 2) == 0:
-        return False
-    return True
+        return True
+    return False
 
 
 couples_schedule = {
@@ -214,41 +214,34 @@ def people_can_change(user_obj, change, parameter, value):
     surname = user_obj.surname
     schedule = user_obj.schedule
     time = user_obj.time
-
     settings = user_obj.settings
     position = user_obj.position
-
     del user_obj
+
     if change == 'id':
         id = value
+
     elif change == 'name':
         name = value
+
     elif change == 'surname':
         surname = value
+
     elif change == 'schedule':
         schedule = value
+
     elif change == 'time':
         time = value
+
     elif change == 'settings':
-        if parameter == 'notification':
-            settings['notification'] = value
-        elif parameter == 'combination of weeks':
-            settings['combination of weeks'] = value
-        elif parameter == 'language':
-            settings['language'] = value
-        elif parameter == 'UTC':
-            settings['UTC'] = value
-        elif parameter == 'Time instead of number':
-            settings['Time instead of number'] = value
+        for i in settings:
+            if str(i) == parameter:
+                settings[i] = value
+
     elif change == 'position':
-        if parameter == 'last message':
-            position['last message'] = value
-        elif parameter == 'week even':
-            position['week even'] = value
-        elif parameter == 'day':
-            position['day'] = value
-        elif parameter == 'week':
-            position['week'] = value
+        for i in position:
+            if str(i) == parameter:
+                position[i] = value
 
     client = user.user(id=id, name=name, surname=surname, schedule=schedule,
                        time=time, settings=settings, position=position)

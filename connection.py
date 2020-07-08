@@ -1,7 +1,5 @@
 import os
-
 import psycopg2
-
 import tools
 import user
 
@@ -72,8 +70,7 @@ def get_array_user():
         settings = tools.set_settings(row[5])
         position = tools.set_position(row[6])
 
-        client = user.user(id, name, surname, schedule, time, settings, position,
-                           working_day=[True, True, True, True, True, False, False])
+        client = user.user(id, name, surname, schedule, time, settings, position)
 
         array.append(client)
 
