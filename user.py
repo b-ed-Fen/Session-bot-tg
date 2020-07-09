@@ -12,7 +12,7 @@ class user:
                      'notification': False,  # уведомление (Да/Нет)
                      'combination of weeks': False,  # совместить расписание в одну неделю (Да/Нет)
                      'language': 'us',  # язык
-                     'UTC': 3,
+                     'UTC': 3.0,
                      'Time instead of number': False
                  },
                  position={  # позиция пользователя

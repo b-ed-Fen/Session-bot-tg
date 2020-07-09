@@ -96,7 +96,7 @@ def data_update():
     while True:
         connection.Update(users)
         print('database has been updated')
-        time.sleep(60)
+        time.sleep(1800)
 
 
 # выбор языка

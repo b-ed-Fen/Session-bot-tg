@@ -85,6 +85,11 @@ def get_position(position):
     return answer
 
 
+#   функция перевода из str в bool
+def str_to_bool(value):
+    return value.lower() in ("yes", "true", "1")
+
+
 def set_settings(text):
     notification = False
     combination_of_weeks = False
@@ -97,15 +102,15 @@ def set_settings(text):
         if i == '\n':
             c += 1
             if c == 1:
-                notification = bool(temp)
-            if c == 2:
-                combination_of_weeks = bool(temp)
-            if c == 3:
+                notification = str_to_bool(temp)
+            elif c == 2:
+                combination_of_weeks = str_to_bool(temp)
+            elif c == 3:
                 language = str(temp)
-            if c == 4:
+            elif c == 4:
                 UTC = float(temp)
-            if c == 5:
-                time_instead_of_number = bool(temp)
+            elif c == 5:
+                time_instead_of_number = str_to_bool(temp)
             temp = ''
         else:
             temp += i
@@ -133,11 +138,11 @@ def set_position(text):
             c += 1
             if c == 1:
                 last_message = str(temp)
-            if c == 2:
-                week_even = bool(temp)
-            if c == 3:
+            elif c == 2:
+                week_even = str_to_bool(temp)
+            elif c == 3:
                 day = int(temp)
-            if c == 4:
+            elif c == 4:
                 week = int(temp)
             temp = ''
         else:
@@ -151,7 +156,6 @@ def set_position(text):
     }
 
     return answer
-
 
 
 def get_even():  # True - Четная; False - Не четная
