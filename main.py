@@ -89,11 +89,7 @@ def notification():
                 bot.send_message(client.id,
                                  information_line_daily(client, int(tools.get_even()), datetime.today().isoweekday()) +
                                  '\n' + daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
-
-
-def message_upd():
-    while True:
-        for client in users:
+            
             try:
                 if client.position['last message type'] == 1:  # обновление сообщения today
                     bot.edit_message_text(chat_id=client.id,
@@ -104,14 +100,13 @@ def message_upd():
                                                                      datetime.today().isoweekday()))
             except Exception as e:
                 print(f' *** {client.id} Old version of settings!')
-        time.sleep(120)
 
-
+                
 def data_update():
     while True:
         connection.Update(users)
         print('database has been updated')
-        time.sleep(60)
+        time.sleep(1800)
 
 
 # выбор языка
@@ -653,15 +648,11 @@ def callback_worker(call):
 
 th_notigic = threading.Thread(target=notification)
 th_db = threading.Thread(target=data_update)
-th_ms = threading.Thread(target=message_upd)
 
 th_notigic.daemon = True
 th_notigic.start()
 
 th_db.daemon = True
 th_db.start()
-
-th_ms.daemon = True
-th_ms.start()
 
 bot.polling(none_stop=True)
