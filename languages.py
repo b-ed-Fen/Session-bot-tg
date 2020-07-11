@@ -149,19 +149,32 @@ assembly = {
               'week, with three presses complete the schedule of the week. In cases of using an even and odd week, '
               'repeat the same actions for the next week. Paying attention that in the filling we use the format of '
               'week 7, if there is no “empty” class on one day, the day is filled with a space. To get the template '
-              'file, enter /template.',
+              'file, enter /template.'
+              'How to configure a bot for yourself?\т\nEverything is simple here, you just need to write / settings '
+              'and select all the functions that you need. Do not be afraid to click on these commands, I will not '
+              'delete your schedule until you give me a new one. If it’s not clear from the settings what this or '
+              'that function does, try entering its command, I will try to explain what will change.',
+
         'ua': 'Як створити свій розклад? \nСоздаем і відкриваємо .txt файл, вводите розклад через підрядник '
               'розділяючи заняття одним натисканням Enter. Двома натисканнями Enter поділяєте дні тижня, '
               'трьома натисканнями завершите розклад тижні. У випадки використання парній і непарній тижні повторюєте '
               'такі ж дії на стежить тиждень. Звертаючи увагу що в заповненні використовуємо формат тижні 7, '
               'якщо занять в якийсь день немає «порожній» день заповнюється прогалиною. Для отримання файлу шаблону '
-              'введіть /template.',
+              'введіть /template.'
+              'Як налаштувати бота під себе\nТут все просто, необхідно лише написати / settings і вибрати всі '
+              'функції, які вам потрібні. Не бійтеся натискати на ці команди, я не видалю ваше розклад до тих пір, '
+              'поки ви мені не дасте нове. Якщо з налаштувань не ясно що робить та чи інша функція, спробуйте ввести '
+              'її команду я постараюся пояснити, що зміниться.',
+
         'ru': 'Как создать своё расписание?\nСоздаем и открываем .txt файл, вводите расписание построчно разделяя '
               'занятия одним нажатием Enter. Двумя нажатиями Enter разделяете дни недели, тремя нажатиями завершите '
               'расписание недели. В случаи использования четной и нечетной недели повторяете такие же действия на '
               'следящую неделю. Обращая внимание что в заполнении используем формат недели 7, если занятий в какой-то '
               'день нет «пустой» день заполняется пробелом. Для получения файла шаблона введите /template. '
-
+              'Как настроить бота под себя?\nТут все просто, необходимо лишь написать /settings и выбрать все '
+              'функции, которые вам нужны. Не бойтесь нажимать на эти команды, я не удалю ваше расписание до тех пор, '
+              'пока вы мне не дадите новое. Если из настроек не ясно что делает та или иная функция, попробуйте '
+              'ввести ее команду я постараюсь объяснить, что изменится. '
     },
 
     'enter time': {
@@ -214,6 +227,12 @@ assembly = {
 
         }
 
+    },
+
+    'no schedule': {
+        'us': ' No schedule',
+        'ua': 'Розкладу немає',
+        'ru': 'Расписания нет'
     }
 
 }

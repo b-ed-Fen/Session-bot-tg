@@ -19,7 +19,9 @@ class user:
                      'last message': 'null',
                      'week even': False,
                      'day': 1,
-                     'week': 0
+                     'week': 0,
+                     'last message id': 0,
+                     'last message type': 0
                  }
                  ):
         self.id = id

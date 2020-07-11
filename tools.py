@@ -91,36 +91,35 @@ def str_to_bool(value):
 
 
 def set_settings(text):
-    notification = False
-    combination_of_weeks = False
-    language = 'us'
+    notification = False,  # уведомление (Да/Нет)
+    combination_of_weeks = False,  # совместить расписание в одну неделю (Да/Нет)
+    language = 'us'  # язык
     UTC = 0
-    time_instead_of_number = False
+    Time_instead_of_number = False
     c = 0
     temp = ''
     for i in text:
         if i == '\n':
             c += 1
-            if c == 1:
+            if c == 1:  # notification
                 notification = str_to_bool(temp)
-            elif c == 2:
+            elif c == 2:    # combination of weeks
                 combination_of_weeks = str_to_bool(temp)
-            elif c == 3:
+            elif c == 3:    # language
                 language = str(temp)
-            elif c == 4:
+            elif c == 4:    # UTC
                 UTC = float(temp)
-            elif c == 5:
-                time_instead_of_number = str_to_bool(temp)
+            elif c == 5:    # Time instead of number
+                Time_instead_of_number = str_to_bool(temp)
             temp = ''
         else:
             temp += i
-
     answer = {
         'notification': notification,  # уведомление (Да/Нет)
         'combination of weeks': combination_of_weeks,  # совместить расписание в одну неделю (Да/Нет)
         'language': language,  # язык
         'UTC': UTC,
-        'Time instead of number': time_instead_of_number
+        'Time instead of number': Time_instead_of_number
     }
 
     return answer
@@ -131,19 +130,30 @@ def set_position(text):
     week_even = False
     day = 1
     week = 0
+    last_message_id = 0
+    last_message_type = 0
+
     c = 0
     temp = ''
     for i in text:
         if i == '\n':
             c += 1
-            if c == 1:
-                last_message = str(temp)
-            elif c == 2:
-                week_even = str_to_bool(temp)
-            elif c == 3:
-                day = int(temp)
-            elif c == 4:
-                week = int(temp)
+            try:
+                if c == 1:  # last message
+                    last_message = str(temp)
+                elif c == 2:  # week even
+                    week_even = str_to_bool(temp)
+                elif c == 3:  # day
+                    day = int(temp)
+                elif c == 4:  # week
+                    week = int(temp)
+                elif c == 5:  # last message id
+                    last_message_id = int(temp)
+                elif c == 6:  # last message type
+                    last_message_type = int(temp)
+            except Exception as e:
+                print(e)
+
             temp = ''
         else:
             temp += i
@@ -152,7 +162,9 @@ def set_position(text):
         'last message': last_message,
         'week even': week_even,
         'day': day,
-        'week': week
+        'week': week,
+        'last message id': last_message_id,
+        'last message type': last_message_type
     }
 
     return answer

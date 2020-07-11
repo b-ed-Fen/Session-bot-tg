@@ -31,7 +31,8 @@ def daily_schedule(client, w, d):
         for i in client.schedule[w][d - 1]:
             on_account = on_account + 1
             if client.settings['Time instead of number']:
-                if tools.couples_schedule[on_account] <= localtime.strftime('%H:%M') < tools.couples_schedule[on_account + 1]:
+                if tools.couples_schedule[on_account] <=\
+                        localtime.strftime('%H:%M') < tools.couples_schedule[on_account + 1]:
                     answer = answer + '      → ' + ' \t '
                 else:
                     answer = answer + tools.couples_schedule[on_account] + ' \t  '
@@ -42,6 +43,8 @@ def daily_schedule(client, w, d):
             answer = answer + str(i) + '\n'
     except Exception as e:
         answer = 'Wowps! We had a problem reading your schedule, I only know that: ' + str(e)
+        if str(e) == 'list index out of range':
+            answer = languages.assembly['no schedule'][client.settings['language']]
 
     return answer
 
@@ -64,8 +67,7 @@ def information_line_daily(client, w, d):
     if client.position['week even']:
         w = 1 if w == 0 else 0
 
-    answer = languages.assembly['wish of the day'][client.settings['language']][d] + ', ' + client.name \
-
+    answer = languages.assembly['wish of the day'][client.settings['language']][d] + ', ' + client.name
     if not client.settings['combination of weeks']:
         answer += ' | ' + languages.assembly['week even'][client.settings['language']][w]
 
@@ -73,30 +75,43 @@ def information_line_daily(client, w, d):
 
 
 token = os.environ.get("TOKEN")
-update = Updater(token, use_context=True)
 bot = telebot.TeleBot(token)
-job = update.job_queue
-
 users = connection.get_array_user()
 
 
 def notification():
     while True:
+        time.sleep(60)
         for client in users:
-            localtime = datetime.now() + timedelta(minutes=-180) + timedelta(minutes=client.settings['UTC'] * 60)
+            #               UTC 0                         пользовательский UTC
+            localtime = datetime.now() + timedelta(minutes=client.settings['UTC'] * 60)
             if client.settings['notification'] and client.time == localtime.strftime('%H:%M'):
                 bot.send_message(client.id,
                                  information_line_daily(client, int(tools.get_even()), datetime.today().isoweekday()) +
                                  '\n' + daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
 
-        time.sleep(60)
+
+def message_upd():
+    while True:
+        for client in users:
+            try:
+                if client.position['last message type'] == 1:  # обновление сообщения today
+                    bot.edit_message_text(chat_id=client.id,
+                                          message_id=client.position['last message id'],
+                                          text=information_line(client, int(tools.get_even()),
+                                                                datetime.today().isoweekday()) +
+                                               '\n' + daily_schedule(client, int(tools.get_even()),
+                                                                     datetime.today().isoweekday()))
+            except Exception as e:
+                print(f' *** {client.id} Old version of settings!')
+        time.sleep(120)
 
 
 def data_update():
     while True:
         connection.Update(users)
         print('database has been updated')
-        time.sleep(1800)
+        time.sleep(60)
 
 
 # выбор языка
@@ -307,9 +322,13 @@ def today(message):
         bot.send_message(message.chat.id,
                          languages.assembly['not in the database']['ru'])
     else:
-        bot.send_message(message.chat.id,
-                         information_line(client, int(tools.get_even()), datetime.today().isoweekday()) + '\n' +
-                         daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
+        mes = bot.send_message(message.chat.id,
+                               information_line(client, int(tools.get_even()), datetime.today().isoweekday()) + '\n' +
+                               daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
+        users = find[0]
+        client = tools.people_can_change(client, 'position', 'last message id', mes.message_id)
+        client = tools.people_can_change(client, 'position', 'last message type', 1)
+        users.append(client)
 
 
 @bot.message_handler(commands=['tomorrow'])
@@ -402,7 +421,6 @@ def help_ui(message):
         doc.close()
 
 
-
 @bot.message_handler(commands=['torn'])
 def torn_ui(message):
     # включить увидомления
@@ -431,10 +449,11 @@ def text(message):
     global users
     find = tools.find_and_cut(users, message.chat.id)
     client = find[1]
+
     if client != 0:
 
+        # установить utc
         if client.position['last message'] == 'utc':
-            # установить utc
             try:
                 client = tools.people_can_change(client, 'settings', 'UTC', float(message.text))
                 users = find[0]  # удаление пользователя для его замены
@@ -447,11 +466,13 @@ def text(message):
             except Exception as e:
                 bot.send_message(message.chat.id, str(e))
 
+        # установить время
         if client.position['last message'] == 'time':
-            # установить время
             try:
-                datetime.strptime(str(message.text), '%H:%M').date()  # если что-то пойдет не так то выкенет Exception
-                client = tools.people_can_change(client, 'time', 0, str(message.text))
+                time_clock = datetime.strptime(str(message.text), '%H:%M').time()  # если что-то пойдет не так то
+                # выкенет Exception
+
+                client = tools.people_can_change(client, 'time', 0, time_clock.strftime('%H:%M'))
                 users = find[0]  # удаление пользователя для его замены
                 bot.send_message(message.chat.id,
                                  languages.assembly['done time'][client.settings['language']] + ' ' + str(client.time))
@@ -602,6 +623,7 @@ def callback_worker(call):
                                   reply_markup=navigation)
             users.append(client)
 
+        # Время вместо цифр в расписании
         if call.data == 'torn on no' or call.data == 'torn on yes':
             past = client.settings['Time instead of number']
             if call.data == 'torn on yes':
@@ -631,11 +653,15 @@ def callback_worker(call):
 
 th_notigic = threading.Thread(target=notification)
 th_db = threading.Thread(target=data_update)
+th_ms = threading.Thread(target=message_upd)
 
 th_notigic.daemon = True
 th_notigic.start()
 
 th_db.daemon = True
 th_db.start()
+
+th_ms.daemon = True
+th_ms.start()
 
 bot.polling(none_stop=True)
