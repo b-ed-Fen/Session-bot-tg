@@ -21,7 +21,9 @@ class user:
                      'day': 1,
                      'week': 0,
                      'last message id': 0,
-                     'last message type': 0
+                     'last message type': 0,
+                     'lesson': 0,
+                     'edit': False
                  }
                  ):
         self.id = id

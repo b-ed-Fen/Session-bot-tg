@@ -132,6 +132,8 @@ def set_position(text):
     week = 0
     last_message_id = 0
     last_message_type = 0
+    lesson = 0
+    edit = False
 
     c = 0
     temp = ''
@@ -151,6 +153,11 @@ def set_position(text):
                     last_message_id = int(temp)
                 elif c == 6:  # last message type
                     last_message_type = int(temp)
+                elif c == 7:  # lesson
+                    lesson = int(temp)
+                elif c == 8:  # edit
+                    edit = str_to_bool(temp)
+
             except Exception as e:
                 print(e)
 
@@ -164,7 +171,9 @@ def set_position(text):
         'day': day,
         'week': week,
         'last message id': last_message_id,
-        'last message type': last_message_type
+        'last message type': last_message_type,
+        'lesson': lesson,
+        'edit': edit
     }
 
     return answer
