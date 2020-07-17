@@ -103,13 +103,13 @@ def set_settings(text):
             c += 1
             if c == 1:  # notification
                 notification = str_to_bool(temp)
-            elif c == 2:    # combination of weeks
+            elif c == 2:  # combination of weeks
                 combination_of_weeks = str_to_bool(temp)
-            elif c == 3:    # language
+            elif c == 3:  # language
                 language = str(temp)
-            elif c == 4:    # UTC
+            elif c == 4:  # UTC
                 UTC = float(temp)
-            elif c == 5:    # Time instead of number
+            elif c == 5:  # Time instead of number
                 Time_instead_of_number = str_to_bool(temp)
             temp = ''
         else:
@@ -182,12 +182,13 @@ def set_position(text):
 def get_even():  # True - Четная; False - Не четная
     date_day = date.today()
     w = datetime(date_day.year, date_day.month, date_day.day)
+    day_w = w.isoweekday()
     w = w.strftime("%d %b %Y")
     d = time.strptime(w, "%d %b %Y")
-
-    if (int(strftime("%U", d)) % 2) == 0:
-        return True
-    return False
+    resul = (int(strftime("%U", d)) % 2) == 0
+    if day_w == 7:
+        return not resul
+    return resul
 
 
 couples_schedule = {
@@ -271,3 +272,13 @@ def people_can_change(user_obj, change, parameter, value):
     client = user.user(id=id, name=name, surname=surname, schedule=schedule,
                        time=time, settings=settings, position=position)
     return client
+
+
+def insert(array, w=0, d=0, l=0, before=False):
+    temp_l = ''
+    temp_d = []
+    temp_w = []
+    for i in array:
+        for j in i:
+            for k in j:
+                print(k)

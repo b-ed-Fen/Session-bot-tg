@@ -230,11 +230,47 @@ assembly = {
     },
 
     'no schedule': {
-        'us': ' No schedule',
+        'us': 'No schedule',
         'ua': 'Розкладу немає',
         'ru': 'Расписания нет'
-    }
+    },
 
+    'editing': {
+        'us': 'EDIT.',
+        'ua': 'РЕД.',
+        'ru': 'РЕД.'
+    },
+
+    'e add': {
+        'add b': {
+            'us': 'add before',
+            'ua': 'додати до',
+            'ru': 'добавить до'
+        },
+        'add a': {
+            'us': 'add after',
+            'ua': 'додати після',
+            'ru': 'добавить после'
+        },
+    },
+
+    'del': {
+        'us': 'delete',
+        'ua': 'видалити',
+        'ru': 'удалить'
+    },
+
+    'edit this day': {
+        'us': 'edit this day',
+        'ua': 'редагувати цей день',
+        'ru': 'редактировать этот день'
+    },
+
+    'back to day selection': {
+        'us': 'back to day selection',
+        'ua': 'до вибору дня',
+        'ru': 'к выбору дня'
+    }
 }
 
 
