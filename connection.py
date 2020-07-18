@@ -37,8 +37,8 @@ def Update(user_array):
         try:
             setinfo = "INSERT INTO UDB (ID,Name,Surname,Schedule,Time,Settings,Position) VALUES (" + \
                       str(i.id) + ", '" + str(i.name) + "', '" + str(i.surname) + "', '" + \
-                      tools.get_schedule_text(i.schedule) + "', '" + i.time + "', '" + tools.get_settings(i.settings) + \
-                      "','" + tools.get_position(i.position) + "')"
+                      tools.get_schedule_text(i.schedule) + "', '" + i.time + "', '" + tools.from_array_to_text(i.settings) + \
+                      "','" + tools.from_array_to_text(i.position) + "')"
 
             cursor.execute(setinfo)
         except Exception as e:
@@ -49,8 +49,8 @@ def Update(user_array):
                 cursor.execute(f"UPDATE UDB set Surname = '{str(i.surname)} 'where ID = {str(i.id)}")
                 cursor.execute(f"UPDATE UDB set Schedule = '{tools.get_schedule_text(i.schedule)}' where ID = {str(i.id)}")
                 cursor.execute(f"UPDATE UDB set Time = '{i.time}' where ID = {str(i.id)}")
-                cursor.execute(f"UPDATE UDB set Settings = '{tools.get_settings(i.settings)}' where ID = {str(i.id)}")
-                cursor.execute(f"UPDATE UDB set Position = '{tools.get_position(i.position)}' where ID = {str(i.id)}")
+                cursor.execute(f"UPDATE UDB set Settings = '{tools.from_array_to_text(i.settings)}' where ID = {str(i.id)}")
+                cursor.execute(f"UPDATE UDB set Position = '{tools.from_array_to_text(i.position)}' where ID = {str(i.id)}")
 
             except Exception as e:
                 print(e)
@@ -80,10 +80,10 @@ def get_array_user():
         id = row[0]
         name = row[1]
         surname = row[2]
-        schedule = tools.set_schedule_arr(row[3])
+        schedule = tools.from_text_to_array_schedule(row[3])
         time = row[4]
         settings = tools.set_settings(row[5])
-        position = tools.set_position(row[6])
+        position = tools.from_text_to_array_position(row[6])
 
         client = user.user(id, name, surname, schedule, time, settings, position)
 

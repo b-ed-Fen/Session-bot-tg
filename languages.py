@@ -283,7 +283,9 @@ def settings(client):
             '/inverting - Swap the weekly schedule = ' + str(client.position['week even']) + '\n'
             '/notification - Turn on notifications = ' + str(client.settings['notification']) + '\n'
             '/time - Set the time for seeing = ' + str(client.time) + '\n'
-            '/torn - Time instead of numbers in the schedule = ' + str(client.settings['Time instead of number']) + '\n',
+            '/torn - Time instead of numbers in the schedule = ' + str(client.settings['Time instead of number']) + '\n'
+            '/edit - adjust the schedule "on the go"\n'
+            '/doc - get your schedule by document',
         'ua': 'Налаштування: \n'
             '/merger - Злиття тижнів = ' + str(client.settings['combination of weeks']) + '\n'
             '/language - Вибір мови = ' + str(client.settings['language']) + '\n'
@@ -291,7 +293,9 @@ def settings(client):
             '/inverting - Поміняти місцями розклад тижнів = ' + str(client.position['week even']) + '\n'
             '/notification - Включення увідомленій = ' + str(client.settings['notification']) + '\n'
             '/time - Встановити час повідомлення = ' + str(client.time) + '\n'
-            '/torn - Час замість цифр в розкладі = ' + str(client.settings['Time instead of number']) + '\n',
+            '/torn - Час замість цифр в розкладі = ' + str(client.settings['Time instead of number']) + '\n'
+            '/edit -  Коригуйте графік "на ходу"\n'
+            '/doc - Отримати свій графік файлом',
         'ru': 'Настройки: \n'
             '/merger - Слияние недель = ' + str(client.settings['combination of weeks']) + '\n'
             '/language - Выбор языка = ' + str(client.settings['language']) + '\n'
@@ -300,6 +304,8 @@ def settings(client):
             '/notification - Включение уведомления = ' + str(client.settings['notification']) + '\n'
             '/time - Установить время уведомлений = ' + str(client.time) + '\n'
             '/torn - Время вместо цифр в расписании = ' + str(client.settings['Time instead of number']) + '\n'
+            '/edit - Корректировать график "на ходу"\n'
+            '/doc - Получить свой график файлом',
     }
     return user_settings[client.settings['language']]
 

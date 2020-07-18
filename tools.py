@@ -6,7 +6,7 @@ import user
 import copy
 
 
-def set_schedule_arr(message):
+def from_text_to_array_schedule(message):
     answer = []
     temp = ''
     temp_d = []
@@ -32,7 +32,7 @@ def set_schedule_arr(message):
     return answer
 
 
-def set_schedule(name):
+def from_file_to_schedule_array(name):
     try:
         file = open('temp/' + str(name) + '.txt', 'r', encoding='utf-8')
     except Exception as e:
@@ -41,7 +41,7 @@ def set_schedule(name):
 
     message = file.read()
 
-    answer = set_schedule_arr(message)
+    answer = from_text_to_array_schedule(message)
 
     file.close()
     os.remove('temp/' + str(name) + '.txt')
@@ -60,7 +60,8 @@ def get_schedule_text(array):
     return answer
 
 
-def get_schedule(id, array):
+# Создает файл с расписанием пользователя
+def make_file_with_schedule(id, array):
     file = open('temp/' + str(id) + '.txt', 'w')
 
     answer = get_schedule_text(array)
@@ -69,17 +70,10 @@ def get_schedule(id, array):
     file.close()
 
 
-def get_settings(settings):
+# Из массива в текст
+def from_array_to_text(settings):
     answer = ''
     for i in settings.values():
-        answer += str(i) + '\n'
-
-    return answer
-
-
-def get_position(position):
-    answer = ''
-    for i in position.values():
         answer += str(i) + '\n'
 
     return answer
@@ -125,7 +119,7 @@ def set_settings(text):
     return answer
 
 
-def set_position(text):
+def from_text_to_array_position(text):
     last_message = 'null'
     week_even = False
     day = 1
@@ -179,7 +173,7 @@ def set_position(text):
     return answer
 
 
-def get_even():  # True - Четная; False - Не четная
+def get_even():  # True - Четная; False - Нечетная
     date_day = date.today()
     w = datetime(date_day.year, date_day.month, date_day.day)
     day_w = w.isoweekday()
@@ -191,6 +185,7 @@ def get_even():  # True - Четная; False - Не четная
     return resul
 
 
+# расписание звонков
 couples_schedule = {
     1: '08:30',
     2: '10:10',
@@ -203,15 +198,6 @@ couples_schedule = {
     9: '22:20',
     10: '00:00'
 }
-
-'''
-Пример работы создания файла с расписанием и чтение с автоудалением соответсвенно:
-get_schedule(0, [[['11', '22', '33'], ['21', '32', '43'], ['31', '42', '53'], ['41', '52', '63'], ['51', '62', '73'],
-                  ['61', '72', '83'], ['71', '82', '93']],
-                 [['11', '22', '33'], ['21', '32', '43'], ['31', '42', '53'], ['41', '52', '63'], ['51', '62', '73'],
-                  ['61', '72', '83'], ['71', '82', '93']]])
-print(set_schedule(0))
-'''
 
 
 # находит пользователя в массиве, вырезает его из массива,
@@ -233,7 +219,7 @@ def find_and_cut(array_of_users, user_id):
     return answer
 
 
-# возвращает массив пользователей с измененным пользователем
+# возвращает пользователя с изменениями
 def people_can_change(user_obj, change, parameter, value):
     id = user_obj.id
     name = user_obj.name
@@ -272,13 +258,3 @@ def people_can_change(user_obj, change, parameter, value):
     client = user.user(id=id, name=name, surname=surname, schedule=schedule,
                        time=time, settings=settings, position=position)
     return client
-
-
-def insert(array, w=0, d=0, l=0, before=False):
-    temp_l = ''
-    temp_d = []
-    temp_w = []
-    for i in array:
-        for j in i:
-            for k in j:
-                print(k)
