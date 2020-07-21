@@ -29,6 +29,18 @@ def from_text_to_array_schedule(message):
             temp = temp + i
             number_of_blank_lines = 0
 
+    n = 0
+    while n < 2:
+        if not answer:
+            answer.append([])
+            answer.append([])
+
+        missing = 7 - len(answer[n])
+        for j in range(missing):
+            answer[n].append([''])
+        n += 1
+
+
     return answer
 
 
@@ -127,7 +139,6 @@ def from_text_to_array_position(text):
     last_message_id = 0
     last_message_type = 0
     lesson = 0
-    edit = False
 
     c = 0
     temp = ''
@@ -149,8 +160,6 @@ def from_text_to_array_position(text):
                     last_message_type = int(temp)
                 elif c == 7:  # lesson
                     lesson = int(temp)
-                elif c == 8:  # edit
-                    edit = str_to_bool(temp)
 
             except Exception as e:
                 print(e)
@@ -166,8 +175,7 @@ def from_text_to_array_position(text):
         'week': week,
         'last message id': last_message_id,
         'last message type': last_message_type,
-        'lesson': lesson,
-        'edit': edit
+        'lesson': lesson
     }
 
     return answer

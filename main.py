@@ -14,9 +14,9 @@ import tools
 import user
 
 
-def daily_schedule(client=user.user(), w=0, d=1, arrow=False, choice=False):
+def daily_schedule(client=user.user(), w=0, d=1, arrow=False, choice=False, week_even_ignore=False):
     try:
-        if client.position['week even']:
+        if client.position['week even'] and not week_even_ignore:
             w = 1 if w == 0 else 0
 
         if client.settings['combination of weeks']:
@@ -28,15 +28,16 @@ def daily_schedule(client=user.user(), w=0, d=1, arrow=False, choice=False):
         localtime = datetime.now() + timedelta(minutes=client.settings['UTC'] * 60)
 
         for i in client.schedule[w][d - 1]:
-            on_account = on_account + 1
-            if client.settings['Time instead of number']:
+            on_account = on_account + 1  # 8 - длинна массива со временем
+            if client.settings['Time instead of number'] and len(client.schedule[w][d - 1]) <= 8:
 
                 # Выбор, тогда не стрелка и не время
                 if choice and (on_account == client.position['lesson']):
                     answer = answer + '        ● ' + ' \t '
 
                 # Стрелка тогда не время
-                elif (tools.couples_schedule[on_account] <= localtime.strftime('%H:%M') < tools.couples_schedule[on_account + 1]) and arrow:
+                elif (tools.couples_schedule[on_account] <= localtime.strftime('%H:%M') < tools.couples_schedule[
+                    on_account + 1]) and arrow:
 
                     answer = answer + '      → ' + ' \t '
 
@@ -87,6 +88,7 @@ def information_line_daily(client, w, d):
 
 
 token = os.environ.get("TOKEN")
+token = '1193056961:AAGgZffqkiwF-2iL00zRs-aiSZDcynbvy7Q'
 bot = telebot.TeleBot(token)
 users = connection.get_array_user()
 
@@ -103,13 +105,13 @@ def notification():
                                  '\n' + daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
 
             try:
-                if client.position['last message type'] == 1:  # обновление сообщения today
+                if client.position['last message type'] == 'today':  # обновление сообщения today
                     bot.edit_message_text(chat_id=client.id,
                                           message_id=client.position['last message id'],
                                           text=information_line(client, int(tools.get_even()),
                                                                 datetime.today().isoweekday()) +
                                                '\n' + daily_schedule(client, int(tools.get_even()),
-                                                                     datetime.today().isoweekday()))
+                                                                     datetime.today().isoweekday(), arrow=True))
             except Exception as e:
                 print(f' *** {client.id} Old version of settings!')
 
@@ -295,7 +297,7 @@ def utc(message):
         users = find[0]  # удаление пользователя для его замены
         bot.send_message(message.chat.id,
                          languages.assembly['choose a utc'][client.settings['language']])
-        client = tools.people_can_change(client, 'position', 'last message', 'utc')
+        client = tools.people_can_change(client, 'position', 'last message type', 'utc')
         users.append(client)
 
 
@@ -334,7 +336,7 @@ def today(message):
                                daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday(), arrow=True))
         users = find[0]
         client = tools.people_can_change(client, 'position', 'last message id', mes.message_id)
-        client = tools.people_can_change(client, 'position', 'last message type', 1)
+        client = tools.people_can_change(client, 'position', 'last message type', 'today')
         users.append(client)
 
 
@@ -390,7 +392,7 @@ def edit_day_week(client=user.user(), message_id=0):
     global users
     navigation = types.InlineKeyboardMarkup()
     messageid = 0
-    if client.position['edit']:  # вносим изменения
+    if client.position['last message type'] == 'edit true':  # вносим изменения
         week_up = types.InlineKeyboardButton(text='↑', callback_data='edit up')
         week_down = types.InlineKeyboardButton(text='↓', callback_data='edit down')
         week_add_b = types.InlineKeyboardButton(text=languages.assembly['e add']['add b'][client.settings['language']],
@@ -417,7 +419,7 @@ def edit_day_week(client=user.user(), message_id=0):
                                         + daily_schedule(client,
                                                          client.position['week'],
                                                          client.position['day'],
-                                                         choice=True),
+                                                         choice=True, week_even_ignore=True),
                                    reply_markup=navigation)
             messageid = mes.message_id
         else:
@@ -431,7 +433,7 @@ def edit_day_week(client=user.user(), message_id=0):
                                        + daily_schedule(client,
                                                         client.position['week'],
                                                         client.position['day'],
-                                                        choice=True),
+                                                        choice=True, week_even_ignore=True),
                                   reply_markup=navigation)
 
 
@@ -441,7 +443,8 @@ def edit_day_week(client=user.user(), message_id=0):
         edit_day = types.InlineKeyboardButton(text=languages.assembly['edit this day'][client.settings['language']],
                                               callback_data='edit day')
         navigation.add(week_back, week_forward)
-
+        message_id_s = 0
+        message_text = ''
         if not client.settings['combination of weeks']:
             week_another = types.InlineKeyboardButton(
                 text=languages.assembly['another'][client.settings['language']],
@@ -453,24 +456,35 @@ def edit_day_week(client=user.user(), message_id=0):
         if message_id == 0:
             mes = bot.send_message(client.id,
                                    information_line(client, client.position['week'], client.position['day']) + '\n' +
-                                   daily_schedule(client, client.position['week'], client.position['day']),
+                                   daily_schedule(client, client.position['week'], client.position['day'],
+                                                  week_even_ignore=True),
                                    reply_markup=navigation)
-            messageid = mes.message_id
+            message_id_s = mes.message_id
+            message_text = mes.text
         else:
-            bot.edit_message_text(chat_id=client.id,
-                                  message_id=message_id,
-                                  text=information_line(client,
-                                                        client.position['week'],
-                                                        client.position['day']) + '\n'
-                                       + daily_schedule(client,
-                                                        client.position['week'],
-                                                        client.position['day'],
-                                                        choice=True),
-                                  reply_markup=navigation)
-        if messageid != 0:
+            answer = information_line(client,
+                                      client.position['week'],
+                                      client.position['day']) + '\n' \
+                     + daily_schedule(client,
+                                      client.position['week'],
+                                      client.position['day'],
+                                      choice=True,
+                                      week_even_ignore=True)
+
+            if client.position['last message id'] != answer:
+                bot.edit_message_text(chat_id=client.id,
+                                      message_id=message_id,
+                                      text=answer,
+                                      reply_markup=navigation)
+            else:
+                bot.answer_callback_query(callback_query_id=client.id,
+                                          text='Nothing has changed here ＼(ﾟｰﾟ＼)')
+
+        if message_id_s != 0:
             temp = tools.find_and_cut(users, client.id)
             users = temp[0]
-            client = tools.people_can_change(client, 'position', 'last message', messageid)
+            client = tools.people_can_change(client, 'position', 'last message id', message_id_s)
+            client = tools.people_can_change(client, 'position', 'last message', message_text)
             users.append(client)
 
 
@@ -499,7 +513,7 @@ def time_ui(message):
     else:
         users = find[0]  # удаление пользователя для его замены
         bot.send_message(message.chat.id, languages.assembly['enter time'][client.settings['language']])
-        client = tools.people_can_change(client, 'position', 'last message', 'time')
+        client = tools.people_can_change(client, 'position', 'last message type', 'time')
         users.append(client)
 
 
@@ -577,21 +591,21 @@ def text(message):
     if client != 0:
 
         # установить utc
-        if client.position['last message'] == 'utc':
+        if client.position['last message type'] == 'utc':
             try:
                 client = tools.people_can_change(client, 'settings', 'UTC', float(message.text))
                 users = find[0]  # удаление пользователя для его замены
                 bot.send_message(message.chat.id,
                                  languages.assembly['done utc'][client.settings['language']] + ' ' +
                                  str(client.settings['UTC']) + '.')
-                client = tools.people_can_change(client, 'position', 'last message', 'null')
+                client = tools.people_can_change(client, 'position', 'last message type', 'null')
                 users.append(client)
 
             except Exception as e:
                 bot.send_message(message.chat.id, str(e))
 
         # установить время
-        if client.position['last message'] == 'time':
+        if client.position['last message type'] == 'time':
             try:
                 time_clock = datetime.strptime(str(message.text), '%H:%M').time()  # если что-то пойдет не так то
                 # выкенет Exception
@@ -600,21 +614,24 @@ def text(message):
                 users = find[0]  # удаление пользователя для его замены
                 bot.send_message(message.chat.id,
                                  languages.assembly['done time'][client.settings['language']] + ' ' + str(client.time))
-                client = tools.people_can_change(client, 'position', 'last message', 'null')
+                client = tools.people_can_change(client, 'position', 'last message type', 'null')
                 users.append(client)
 
             except Exception as e:
                 bot.send_message(message.chat.id, str(e))
 
         # меняем занятие
-        if client.position['edit']:
+        if client.position['last message type'] == 'edit true':
             try:
+                week = client.position['week']
+                week = int(not bool(week)) if (client.position['week even']) else week
+
                 temp = client.schedule
-                temp[client.position['week']][client.position['day'] - 1][client.position['lesson'] - 1] = message.text
+                temp[week][client.position['day'] - 1][client.position['lesson'] - 1] = message.text
                 client = tools.people_can_change(client, 'schedule', 0, temp)
                 users = find[0]  # удаление пользователя для его замены
                 users.append(client)
-                edit_day_week(client, client.position['last message'])
+                edit_day_week(client, client.position['last message id'])
                 bot.delete_message(message.chat.id, message.message_id)
 
             except Exception as e:
@@ -763,9 +780,11 @@ def callback_worker(call):
 
         # управление edit week
         if call.data[:4] == 'edit':
+            week = client.position['week']
+            week = int(not bool(week)) if (client.position['week even']) else week
 
             if call.data == 'edit another':
-                if client.position['week'] == 0:
+                if week == 0:
                     client = tools.people_can_change(client, 'position', 'week', 1)
                 else:
                     client = tools.people_can_change(client, 'position', 'week', 0)
@@ -783,9 +802,12 @@ def callback_worker(call):
                     client = tools.people_can_change(client, 'position', 'day', client.position['day'] + 1)
 
             if call.data == 'edit day':
-                client = tools.people_can_change(client, 'position', 'lesson', 0) if client.position['edit'] \
-                    else tools.people_can_change(client, 'position', 'lesson', 1)
-                client = tools.people_can_change(client, 'position', 'edit', not client.position['edit'])
+                if client.position['last message type'] == 'edit true':
+                    tools.people_can_change(client, 'position', 'lesson', 0)
+                    client = tools.people_can_change(client, 'position', 'last message type', 'edit false')
+                else:
+                    client = tools.people_can_change(client, 'position', 'lesson', 1)
+                    client = tools.people_can_change(client, 'position', 'last message type', 'edit true')
 
             if call.data == 'edit up':
                 if client.position['lesson'] > 1:
@@ -798,7 +820,7 @@ def callback_worker(call):
 
             if call.data == 'edit down':
                 if client.position['lesson'] < len(
-                        client.schedule[client.position['week']][client.position['day'] - 1]):
+                        client.schedule[week][client.position['day'] - 1]):
                     client = tools.people_can_change(client, 'position', 'lesson', client.position['lesson'] + 1)
                 else:
                     bot.answer_callback_query(callback_query_id=call.id,
@@ -808,7 +830,7 @@ def callback_worker(call):
 
             if call.data == 'edit add before':
                 temp = client.schedule
-                temp_b = client.schedule[client.position['week']][client.position['day'] - 1]
+                temp_b = client.schedule[week][client.position['day'] - 1]
                 temp_b.reverse()
                 temp_a = temp_b[: (len(temp_b) - (client.position['lesson'] - 1))]
                 temp_b.reverse()
@@ -816,13 +838,13 @@ def callback_worker(call):
                 temp_b = temp_b[:client.position['lesson'] - 1]
                 temp_b.append(' ')
 
-                temp[client.position['week']][client.position['day'] - 1] = temp_b + temp_a
+                temp[week][client.position['day'] - 1] = temp_b + temp_a
                 client = tools.people_can_change(client, 'schedule', 0, temp)
                 client = tools.people_can_change(client, 'position', 'lesson', client.position['lesson'] + 1)
 
             if call.data == 'edit add after':
                 temp = client.schedule
-                temp_b = client.schedule[client.position['week']][client.position['day'] - 1]
+                temp_b = client.schedule[week][client.position['day'] - 1]
                 temp_b.reverse()
                 temp_a = temp_b[: (len(temp_b) - (client.position['lesson']))]
                 temp_b.reverse()
@@ -830,13 +852,18 @@ def callback_worker(call):
                 temp_b = temp_b[:client.position['lesson']]
                 temp_b.append(' ')
 
-                temp[client.position['week']][client.position['day'] - 1] = temp_b + temp_a
+                temp[week][client.position['day'] - 1] = temp_b + temp_a
                 client = tools.people_can_change(client, 'schedule', 0, temp)
 
             if call.data == 'edit delete':
                 temp = client.schedule
-                del temp[client.position['week']][client.position['day'] - 1][client.position['lesson'] - 1]
+                del temp[week][client.position['day'] - 1][client.position['lesson'] - 1]
+                lesson = client.position['lesson']
+                lesson += -1 if len(client.schedule[week][client.position['day'] - 1]) < client.position[
+                    'lesson'] else lesson
                 client = tools.people_can_change(client, 'schedule', 0, temp)
+                client = tools.people_can_change(client, 'position', 'lesson',
+                                                 lesson if lesson >= 1 else 1)
 
             users.append(client)
 
@@ -866,8 +893,8 @@ def callback_worker(call):
                                           text=languages.assembly['been selected'][client.settings['language']])
 
     else:
-        bot.send_message(call.message.chat.id,
-                         languages.assembly['not in the database']['ru'])
+        bot.answer_callback_query(callback_query_id=call.id,
+                                  text='Take it easy!')
 
 
 th_notigic = threading.Thread(target=notification)
