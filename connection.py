@@ -5,7 +5,6 @@ import user
 import progressbar
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
-DATABASE_URL = 'postgres://kfmowostdmrvfp:44a86b8a41a279597e3bceac3c2474e3b1e2bc6ad1b8cefd52ba26e0c5e45dff@ec2-54-217-204-34.eu-west-1.compute.amazonaws.com:5432/daofmggisj5os3'
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 cursor = conn.cursor()
 

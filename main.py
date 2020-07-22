@@ -88,7 +88,6 @@ def information_line_daily(client, w, d):
 
 
 token = os.environ.get("TOKEN")
-token = '1193056961:AAGgZffqkiwF-2iL00zRs-aiSZDcynbvy7Q'
 bot = telebot.TeleBot(token)
 users = connection.get_array_user()
 
