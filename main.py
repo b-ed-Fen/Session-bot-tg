@@ -61,8 +61,8 @@ def daily_schedule(client=user.user(), w=0, d=1, arrow=False, choice=False, week
     return answer
 
 
-def information_line(client=user.user(), w=0, d=1, message=''):
-    if client.position['week even']:
+def information_line(client=user.user(), w=0, d=1, message='', week_even_ignore=False):
+    if client.position['week even'] and not week_even_ignore:
         w = 1 if w == 0 else 0
     #               UTC 0                         пользовательский UTC
     localtime = datetime.now() + timedelta(minutes=client.settings['UTC'] * 60)
@@ -117,9 +117,9 @@ def notification():
 
 def data_update():
     while True:
-        time.sleep(1800)
         connection.Update(users)
         print('database has been updated')
+        time.sleep(1800)
 
 
 # выбор языка
@@ -414,7 +414,7 @@ def edit_day_week(client=user.user(), message_id=0):
                                                          client.position['week'],
                                                          client.position['day'],
                                                          message=languages.assembly['editing'][
-                                                             client.settings['language']]) + '\n'
+                                                             client.settings['language']], week_even_ignore=True) + '\n'
                                         + daily_schedule(client,
                                                          client.position['week'],
                                                          client.position['day'],
@@ -428,7 +428,7 @@ def edit_day_week(client=user.user(), message_id=0):
                                                         client.position['week'],
                                                         client.position['day'],
                                                         message=languages.assembly['editing'][
-                                                            client.settings['language']]) + '\n'
+                                                            client.settings['language']], week_even_ignore=True) + '\n'
                                        + daily_schedule(client,
                                                         client.position['week'],
                                                         client.position['day'],
@@ -622,11 +622,8 @@ def text(message):
         # меняем занятие
         if client.position['last message type'] == 'edit true':
             try:
-                week = client.position['week']
-                week = int(not bool(week)) if (client.position['week even']) else week
-
                 temp = client.schedule
-                temp[week][client.position['day'] - 1][client.position['lesson'] - 1] = message.text
+                temp[client.position['week']][client.position['day'] - 1][client.position['lesson'] - 1] = message.text
                 client = tools.people_can_change(client, 'schedule', 0, temp)
                 users = find[0]  # удаление пользователя для его замены
                 users.append(client)
@@ -779,26 +776,27 @@ def callback_worker(call):
 
         # управление edit week
         if call.data[:4] == 'edit':
-            week = client.position['week']
-            week = int(not bool(week)) if (client.position['week even']) else week
 
             if call.data == 'edit another':
-                if week == 0:
+                if client.position['week'] == 0:
                     client = tools.people_can_change(client, 'position', 'week', 1)
                 else:
                     client = tools.people_can_change(client, 'position', 'week', 0)
+                client = tools.people_can_change(client, 'position', 'last message type', 'edit false')
 
             if call.data == 'edit back':
                 if client.position['day'] == 1:
                     client = tools.people_can_change(client, 'position', 'day', 7)
                 else:
                     client = tools.people_can_change(client, 'position', 'day', client.position['day'] - 1)
+                client = tools.people_can_change(client, 'position', 'last message type', 'edit false')
 
             if call.data == 'edit forward':
                 if client.position['day'] == 7:
                     client = tools.people_can_change(client, 'position', 'day', 1)
                 else:
                     client = tools.people_can_change(client, 'position', 'day', client.position['day'] + 1)
+                client = tools.people_can_change(client, 'position', 'last message type', 'edit false')
 
             if call.data == 'edit day':
                 if client.position['last message type'] == 'edit true':
@@ -811,6 +809,7 @@ def callback_worker(call):
             if call.data == 'edit up':
                 if client.position['lesson'] > 1:
                     client = tools.people_can_change(client, 'position', 'lesson', client.position['lesson'] - 1)
+                    client = tools.people_can_change(client, 'position', 'last message type', 'edit true')
                 else:
                     bot.answer_callback_query(callback_query_id=call.id,
                                               text='negative value is impossible!')
@@ -819,8 +818,9 @@ def callback_worker(call):
 
             if call.data == 'edit down':
                 if client.position['lesson'] < len(
-                        client.schedule[week][client.position['day'] - 1]):
+                        client.schedule[client.position['week']][client.position['day'] - 1]):
                     client = tools.people_can_change(client, 'position', 'lesson', client.position['lesson'] + 1)
+                    client = tools.people_can_change(client, 'position', 'last message type', 'edit true')
                 else:
                     bot.answer_callback_query(callback_query_id=call.id,
                                               text='There is nothing further :3')
@@ -828,8 +828,9 @@ def callback_worker(call):
                     return
 
             if call.data == 'edit add before':
+                client = tools.people_can_change(client, 'position', 'last message type', 'edit true')
                 temp = client.schedule
-                temp_b = client.schedule[week][client.position['day'] - 1]
+                temp_b = client.schedule[client.position['week']][client.position['day'] - 1]
                 temp_b.reverse()
                 temp_a = temp_b[: (len(temp_b) - (client.position['lesson'] - 1))]
                 temp_b.reverse()
@@ -837,13 +838,14 @@ def callback_worker(call):
                 temp_b = temp_b[:client.position['lesson'] - 1]
                 temp_b.append(' ')
 
-                temp[week][client.position['day'] - 1] = temp_b + temp_a
+                temp[client.position['week']][client.position['day'] - 1] = temp_b + temp_a
                 client = tools.people_can_change(client, 'schedule', 0, temp)
                 client = tools.people_can_change(client, 'position', 'lesson', client.position['lesson'] + 1)
 
             if call.data == 'edit add after':
+                client = tools.people_can_change(client, 'position', 'last message type', 'edit true')
                 temp = client.schedule
-                temp_b = client.schedule[week][client.position['day'] - 1]
+                temp_b = client.schedule[client.position['week']][client.position['day'] - 1]
                 temp_b.reverse()
                 temp_a = temp_b[: (len(temp_b) - (client.position['lesson']))]
                 temp_b.reverse()
@@ -851,19 +853,27 @@ def callback_worker(call):
                 temp_b = temp_b[:client.position['lesson']]
                 temp_b.append(' ')
 
-                temp[week][client.position['day'] - 1] = temp_b + temp_a
+                temp[client.position['week']][client.position['day'] - 1] = temp_b + temp_a
                 client = tools.people_can_change(client, 'schedule', 0, temp)
 
             if call.data == 'edit delete':
-                temp = client.schedule
-                del temp[week][client.position['day'] - 1][client.position['lesson'] - 1]
-                lesson = client.position['lesson']
-                lesson += -1 if len(client.schedule[week][client.position['day'] - 1]) < client.position[
-                    'lesson'] else lesson
-                client = tools.people_can_change(client, 'schedule', 0, temp)
-                client = tools.people_can_change(client, 'position', 'lesson',
-                                                 lesson if lesson >= 1 else 1)
-
+                try:
+                    client = tools.people_can_change(client, 'position', 'last message type', 'edit true')
+                    temp = client.schedule
+                    del temp[client.position['week']][client.position['day'] - 1][client.position['lesson'] - 1]
+                    lesson = client.position['lesson']
+                    if len(client.schedule[client.position['week']][client.position['day'] - 1]) < client.position[
+                        'lesson']:
+                        lesson += -1
+                    client = tools.people_can_change(client, 'schedule', 0, temp)
+                    client = tools.people_can_change(client, 'position', 'lesson',
+                                                     lesson if lesson >= 1 else 1)
+                except Exception as e:
+                    bot.answer_callback_query(callback_query_id=call.id,
+                                              text=f'Unexpected error during deletion code: {e}')
+                    users.append(client)
+                    return
+            client = tools.people_can_change(client, 'position', 'last message id', call.message.message_id)
             users.append(client)
 
             edit_day_week(client, message_id=call.message.message_id)  # сборка расписания

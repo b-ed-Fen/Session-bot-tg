@@ -35,11 +35,13 @@ def from_text_to_array_schedule(message):
             answer.append([])
             answer.append([])
 
+        if len(answer) < 2:
+            answer.append([])
+
         missing = 7 - len(answer[n])
         for j in range(missing):
-            answer[n].append([''])
+            answer[n].append([' '])
         n += 1
-
 
     return answer
 
@@ -47,9 +49,10 @@ def from_text_to_array_schedule(message):
 def from_file_to_schedule_array(name):
     try:
         file = open('temp/' + str(name) + '.txt', 'r', encoding='utf-8')
+
     except Exception as e:
-        answer = []
-        return 'Oops! \n' + str(e)
+        return [[[' '], [' '], [' '], [' '], [' '], [' '], [' ']], [[' '], [' '], [' '], [' '], [' '], [' '], [' ']],
+                [[' ']]]
 
     message = file.read()
 
