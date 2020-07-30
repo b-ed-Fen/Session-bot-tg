@@ -2,8 +2,6 @@ import os
 from datetime import datetime, date
 import time
 from time import strftime
-import user
-import copy
 
 
 def from_text_to_array_schedule(message):
@@ -48,7 +46,7 @@ def from_text_to_array_schedule(message):
 
 def from_file_to_schedule_array(name):
     try:
-        file = open('temp/' + str(name) + '.txt', 'r', encoding='utf-8')
+        file = open('temp/' + str(name) + '.txt', 'r')
 
     except Exception as e:
         return [[[' '], [' '], [' '], [' '], [' '], [' '], [' ']], [[' '], [' '], [' '], [' '], [' '], [' '], [' ']],
@@ -89,7 +87,7 @@ def make_file_with_schedule(id, array):
 def from_array_to_text(settings):
     answer = ''
     for i in settings.values():
-        answer += str(i) + '\n'
+        answer += str(i) + '¶'
 
     return answer
 
@@ -108,7 +106,7 @@ def set_settings(text):
     c = 0
     temp = ''
     for i in text:
-        if i == '\n':
+        if i == '¶':
             c += 1
             if c == 1:  # notification
                 notification = str_to_bool(temp)
@@ -146,7 +144,7 @@ def from_text_to_array_position(text):
     c = 0
     temp = ''
     for i in text:
-        if i == '\n':
+        if i == '¶':
             c += 1
             try:
                 if c == 1:  # last message
@@ -165,7 +163,7 @@ def from_text_to_array_position(text):
                     lesson = int(temp)
 
             except Exception as e:
-                print(e)
+                print('\nThere was a problem in the "from_text_to_array_position" function.\n', f'problem: {e}')
 
             temp = ''
         else:
@@ -196,76 +194,10 @@ def get_even():  # True - Четная; False - Нечетная
     return resul
 
 
-# расписание звонков
-couples_schedule = {
-    1: '08:30',
-    2: '10:10',
-    3: '11:50',
-    4: '14:00',
-    5: '15:40',
-    6: '17:20',
-    7: '19:00',
-    8: '20:40',
-    9: '22:20',
-    10: '00:00'
-}
-
-
-# находит пользователя в массиве, вырезает его из массива,
-# возврящает клон пользователя и массив пользователей без
-# этого пользователя
-def find_and_cut(array_of_users, user_id):
-    array_of_users_copy = copy.deepcopy(array_of_users)
-    answer = []
-    client = 0
-    user_id_array = 0
-    for i in array_of_users_copy:
-        if i.id == user_id:
-            client = copy.deepcopy(array_of_users[user_id_array])
-            del array_of_users_copy[user_id_array]
+def find(array, user_id):
+    number_id_array = None
+    for i in range(len(array)):
+        if array[i].id == user_id:
+            number_id_array = i
             break
-        user_id_array = user_id_array + 1
-    answer.append(array_of_users_copy)
-    answer.append(client)
-    return answer
-
-
-# возвращает пользователя с изменениями
-def people_can_change(user_obj, change, parameter, value):
-    id = user_obj.id
-    name = user_obj.name
-    surname = user_obj.surname
-    schedule = user_obj.schedule
-    time = user_obj.time
-    settings = user_obj.settings
-    position = user_obj.position
-    del user_obj
-
-    if change == 'id':
-        id = value
-
-    elif change == 'name':
-        name = value
-
-    elif change == 'surname':
-        surname = value
-
-    elif change == 'schedule':
-        schedule = value
-
-    elif change == 'time':
-        time = value
-
-    elif change == 'settings':
-        for i in settings:
-            if str(i) == parameter:
-                settings[i] = value
-
-    elif change == 'position':
-        for i in position:
-            if str(i) == parameter:
-                position[i] = value
-
-    client = user.user(id=id, name=name, surname=surname, schedule=schedule,
-                       time=time, settings=settings, position=position)
-    return client
+    return number_id_array

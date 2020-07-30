@@ -6,6 +6,8 @@ class user:
     time = '00:00'  # время получения ув.
     settings = {}  # настройки
     position = {}  # позиции
+    couples_schedule = []   # расписание звонков
+    working_day = []    # расписание рабочих дней
 
     def __init__(self, id=0, name='', surname='', schedule=[[[' '], [' '], [' '], [' '], [' '], [' '], [' ']],
                                                             [[' '], [' '], [' '], [' '], [' '], [' '], [' ']], [[' ']]],
@@ -25,7 +27,14 @@ class user:
                      'last message id': 0,
                      'last message type': 'null',
                      'lesson': 0
-                 }
+                 },
+                 couples_schedule={  # расписание звонков
+                     1: '08:30',
+                     2: '10:10',
+                     3: '11:50',
+                     4: '14:00'
+                 },
+                 working_day=[True, False, True, True, True, True, True]
                  ):
         self.id = id
         self.name = name
@@ -34,3 +43,5 @@ class user:
         self.time = time
         self.settings = settings
         self.position = position
+        self.couples_schedule = couples_schedule
+        self.working_day = working_day
