@@ -17,7 +17,8 @@ class user:
                      'combination of weeks': False,  # совместить расписание в одну неделю (Да/Нет)
                      'language': 'us',  # язык
                      'UTC': 3.0,
-                     'Time instead of number': False
+                     'Time instead of number': False,
+                     'little sister mode': False
                  },
                  position={  # позиция пользователя
                      'last message': 'null',
@@ -34,7 +35,7 @@ class user:
                      3: '11:50',
                      4: '14:00'
                  },
-                 working_day=[True, False, True, True, True, True, True]
+                 working_day=[True, True, True, True, True, True, True]
                  ):
         self.id = id
         self.name = name

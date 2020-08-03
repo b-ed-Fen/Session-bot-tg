@@ -46,9 +46,10 @@ def from_text_to_array_schedule(message):
 
 def from_file_to_schedule_array(name):
     try:
-        file = open('temp/' + str(name) + '.txt', 'r')
+        file = open('temp/' + str(name) + '.txt', 'r', encoding='utf-8')
 
     except Exception as e:
+        print(e)
         return [[[' '], [' '], [' '], [' '], [' '], [' '], [' ']], [[' '], [' '], [' '], [' '], [' '], [' '], [' ']],
                 [[' ']]]
 
@@ -83,12 +84,19 @@ def make_file_with_schedule(id, array):
     file.close()
 
 
-# Из массива в текст
-def from_array_to_text(settings):
+# Из словаря в текст
+def from_vocabulary_to_text(vocabulary):
     answer = ''
-    for i in settings.values():
+    for i in vocabulary.values():
         answer += str(i) + '¶'
+    return answer
 
+
+# Из массива в текст
+def from_array_to_text(array):
+    answer = ''
+    for i in array:
+        answer += str(i) + '¶'
     return answer
 
 
@@ -158,12 +166,12 @@ def from_text_to_array_position(text):
                 elif c == 5:  # last message id
                     last_message_id = int(temp)
                 elif c == 6:  # last message type
-                    last_message_type = int(temp)
+                    last_message_type = str(temp)
                 elif c == 7:  # lesson
                     lesson = int(temp)
 
             except Exception as e:
-                print('\nThere was a problem in the "from_text_to_array_position" function.\n', f'problem: {e}')
+                print('\nThere was a problem in the "from_text_to_array_position" function.\n', f'problem: {e}, value: {temp}')
 
             temp = ''
         else:
@@ -179,6 +187,35 @@ def from_text_to_array_position(text):
         'lesson': lesson
     }
 
+    return answer
+
+
+def from_text_to_array_couples_schedule(text):
+    answer = {}
+    c = 0
+    temp = ''
+    for i in text:
+        if i == '¶':
+            c += 1
+            try:
+                answer[int(c)] = str(temp)
+            except Exception as e:
+                print('\nThere was a problem in the "from_text_to_array_position" function.\n', f'problem: {e}')
+            temp = ''
+        else:
+            temp += i
+    return answer
+
+
+def from_text_to_array_working_day(text):
+    answer = []
+    temp = ''
+    for i in text:
+        if i == '¶':
+            answer.append(str_to_bool(temp))
+            temp = ''
+        else:
+            temp += i
     return answer
 
 

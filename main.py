@@ -31,33 +31,38 @@ def daily_schedule(client=user.user(), w=0, d=1, arrow=False, choice=False, week
         localtime = datetime.now() + timedelta(minutes=client.settings['UTC'] * 60)
 
         for i in client.schedule[w][d - 1]:
+            e_code = 0
             on_account = on_account + 1                                                     # длинна массива со временем
             if client.settings['Time instead of number'] and len(client.schedule[w][d - 1]) < len(client.couples_schedule):
-
+                e_code = 1
                 # Выбор, тогда не стрелка и не время
                 if choice and (on_account == client.position['lesson']):
                     answer = answer + '        ● ' + ' \t '
+                    e_code = 2
 
                 # Стрелка тогда не время
                 elif (client.couples_schedule[on_account] <= localtime.strftime('%H:%M') < client.couples_schedule[
                     on_account + 1]) and arrow:
-
+                    e_code = 3
                     answer = answer + '      → ' + ' \t '
 
                 # Время
                 else:
                     answer = answer + client.couples_schedule[on_account] + ' \t  '
+                    e_code = 4
 
             # Номер занятия
             else:
                 if choice and (on_account == client.position['lesson']):
                     answer = answer + ' ●   ' + ' \t '
+                    e_code = 5
                 else:
                     answer = answer + str(on_account) + ':  ' + ' \t  '
+                    e_code = 6
 
             answer = answer + str(i) + '\n'
     except Exception as e:
-        answer = 'Wowps! We had a problem reading your schedule, I only know that: ' + str(e)
+        answer = 'Wowps! We had a problem reading your schedule, I only know that: ' + str(e) + 'ecod = ' + str(e_code)
         if str(e) == 'list index out of range':
             answer = languages.assembly['no schedule'][client.settings['language']]
 
@@ -118,9 +123,9 @@ def notification():
 
 def data_update():
     while True:
+        time.sleep(60)
         connection.Update(users)
         print('database has been updated')
-        time.sleep(1800)
 
 
 # выбор языка
@@ -144,6 +149,7 @@ def start(message):
     if number is None:
         client = user.user(id=message.chat.id, name=message.from_user.first_name, surname=message.from_user.last_name)
         users.append(client)
+        number = tools.find(users, message.chat.id)
 
     bot.send_message(message.chat.id,
                      languages.assembly['hi'][users[number].settings['language']] + ' ' + users[number].name
@@ -185,7 +191,7 @@ def handle_docs(message):
             src = 'temp/' + str(chat_id) + '.txt'
             with open(src, 'wb') as new_file:
                 new_file.write(downloaded_file)
-            users[number].schedule = tools.from_file_to_schedule_array(str(chat_id))
+            users[number].schedule = tools.from_file_to_schedule_array(chat_id)
             bot.reply_to(message, languages.assembly['received'][users[number].settings['language']])
 
         else:
@@ -360,6 +366,7 @@ def tomorrow(message):
     global users
     number = tools.find(users, message.chat.id)
 
+    week_parity = int(tools.get_even())
     if number is None:
         bot.send_message(message.chat.id,
                          languages.assembly['not in the database']['ru'])
@@ -601,6 +608,49 @@ def torn_ui(message):
         bot.send_message(message.chat.id,
                          languages.assembly['torn'][users[number].settings['language']],
                          reply_markup=torn)
+
+
+def working_day(user_id=0, message_id=None):
+    global users
+    number = tools.find(users, user_id)
+    if number is None:
+        bot.send_message(user_id,
+                         languages.assembly['not in the database']['ru'])
+    else:
+        navigation = types.InlineKeyboardMarkup()
+        monday = types.InlineKeyboardButton(text=f'mon: { "on" if users[number].working_day[0] else "off" }',
+                                            callback_data='wd 0')
+        tuesday = types.InlineKeyboardButton(text=f'tue: { "on" if users[number].working_day[1] else "off" }',
+                                             callback_data='wd 1')
+        wednesday = types.InlineKeyboardButton(text=f'wed: { "on" if users[number].working_day[2] else "off" }',
+                                               callback_data='wd 2')
+        thursday = types.InlineKeyboardButton(text=f'the: { "on" if users[number].working_day[3] else "off" }',
+                                              callback_data='wd 3')
+        friday = types.InlineKeyboardButton(text=f'fri: { "on" if users[number].working_day[4] else "off" }',
+                                            callback_data='wd 4')
+        saturday = types.InlineKeyboardButton(text=f'sat: { "on" if users[number].working_day[5] else "off" }',
+                                              callback_data='wd 5')
+        sunday = types.InlineKeyboardButton(text=f'sun: { "on" if users[number].working_day[6] else "off" }',
+                                            callback_data='wd 6')
+
+        navigation.add(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
+        answer = 'What days should I remind you to save classes?\n(on - remind me of the schedule, off - do not ' \
+                 'remind me of the schedule) '
+
+        if message_id is None:
+            mes = bot.send_message(user_id, text=answer, reply_markup=navigation)
+            users[number].position['last message type'] = 'working day'
+            users[number].position['last message id'] = mes.message_id
+            return
+
+        elif users[number].position['last message type'] == 'working day':
+            bot.edit_message_text(answer, chat_id=user_id, message_id=users[number].position['last message id'],
+                                  reply_markup=navigation)
+
+
+@bot.message_handler(commands=['wdn'])
+def wdn_ui(message):
+    working_day(message.chat.id)
 
 
 @bot.message_handler(content_types=['text'])
@@ -933,6 +983,13 @@ def callback_worker(call):
             else:
                 bot.answer_callback_query(callback_query_id=call.id,
                                           text=languages.assembly['been selected'][users[number].settings['language']])
+            return
+
+        if call.data[:2] == 'wd':
+
+            users[number].working_day[int(call.data[-1])] = not users[number].working_day[int(call.data[-1])]
+
+            working_day(call.message.chat.id, call.message.message_id)
             return
 
 
