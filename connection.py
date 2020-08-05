@@ -96,9 +96,8 @@ def get_array_user():
         settings = tools.set_settings(row[5])
         position = tools.from_text_to_array_position(row[6])
         couples_schedule = tools.from_text_to_array_couples_schedule(row[7])
-        working_day = ''
 
-        client = user.user(id, name, surname, schedule, time, settings, position, couples_schedule, working_day)
+        client = user.user(id, name, surname, schedule, time, settings, position, couples_schedule)
 
         array.append(client)
         bar.update(t)
