@@ -32,8 +32,9 @@ def daily_schedule(client=user.user(), w=0, d=1, arrow=False, choice=False, week
 
         for i in client.schedule[w][d - 1]:
             e_code = 0
-            on_account = on_account + 1                                                     # длинна массива со временем
-            if client.settings['Time instead of number'] and len(client.schedule[w][d - 1]) < len(client.couples_schedule):
+            on_account = on_account + 1  # длинна массива со временем
+            if client.settings['Time instead of number'] and len(client.schedule[w][d - 1]) < len(
+                    client.couples_schedule):
                 e_code = 1
                 # Выбор, тогда не стрелка и не время
                 if choice and (on_account == client.position['lesson']):
@@ -618,19 +619,19 @@ def working_day(user_id=0, message_id=None):
                          languages.assembly['not in the database']['ru'])
     else:
         navigation = types.InlineKeyboardMarkup()
-        monday = types.InlineKeyboardButton(text=f'mon: { "on" if users[number].working_day[0] else "off" }',
+        monday = types.InlineKeyboardButton(text=f'mon: {"on" if users[number].working_day[0] else "off"}',
                                             callback_data='wd 0')
-        tuesday = types.InlineKeyboardButton(text=f'tue: { "on" if users[number].working_day[1] else "off" }',
+        tuesday = types.InlineKeyboardButton(text=f'tue: {"on" if users[number].working_day[1] else "off"}',
                                              callback_data='wd 1')
-        wednesday = types.InlineKeyboardButton(text=f'wed: { "on" if users[number].working_day[2] else "off" }',
+        wednesday = types.InlineKeyboardButton(text=f'wed: {"on" if users[number].working_day[2] else "off"}',
                                                callback_data='wd 2')
-        thursday = types.InlineKeyboardButton(text=f'the: { "on" if users[number].working_day[3] else "off" }',
+        thursday = types.InlineKeyboardButton(text=f'the: {"on" if users[number].working_day[3] else "off"}',
                                               callback_data='wd 3')
-        friday = types.InlineKeyboardButton(text=f'fri: { "on" if users[number].working_day[4] else "off" }',
+        friday = types.InlineKeyboardButton(text=f'fri: {"on" if users[number].working_day[4] else "off"}',
                                             callback_data='wd 4')
-        saturday = types.InlineKeyboardButton(text=f'sat: { "on" if users[number].working_day[5] else "off" }',
+        saturday = types.InlineKeyboardButton(text=f'sat: {"on" if users[number].working_day[5] else "off"}',
                                               callback_data='wd 5')
-        sunday = types.InlineKeyboardButton(text=f'sun: { "on" if users[number].working_day[6] else "off" }',
+        sunday = types.InlineKeyboardButton(text=f'sun: {"on" if users[number].working_day[6] else "off"}',
                                             callback_data='wd 6')
 
         navigation.add(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
@@ -651,6 +652,29 @@ def working_day(user_id=0, message_id=None):
 @bot.message_handler(commands=['wdn'])
 def wdn_ui(message):
     working_day(message.chat.id)
+
+
+@bot.message_handler(commands=['letime'])
+def show_call_schedule(message):
+    global users
+    number = tools.find(users, message.chat.id)
+
+    if number is None:
+        bot.send_message(message.chat.id,
+                         languages.assembly['not in the database']['ru'])
+    else:
+        bot.send_message(message.chat.id,
+                         'To change, write a message in which describe the beginning of each lesson in the format '
+                         '"H:M" (eg 08:30). The classes should be separated by the enterter (one line - one lesson).\n'
+                         'The call schedule currently consists of:')
+
+        sch = tools.from_array_to_text(users[number].couples_schedule.values(), separator='\n')
+        sch = sch if sch != '' else 'empty'
+        mes = bot.send_message(message.chat.id, sch)
+
+        users[number].position['last message type'] = 'letime'
+        users[number].position['last message id'] = mes.message_id
+        users[number].position['last message'] = mes.text
 
 
 @bot.message_handler(content_types=['text'])
@@ -708,6 +732,19 @@ def text(message):
 
             except Exception as e:
                 bot.send_message(message.chat.id, str(e))
+
+        if users[number].position['last message type'] == 'letime':
+            users[number].couples_schedule = tools.from_text_to_array_couples_schedule(message.text + '\n',
+                                                                                       separator='\n')
+            edit = tools.from_array_to_text(users[number].couples_schedule.values(), separator='\n')
+            if edit != users[number].position['last message'] + '\n':
+                users[number].position['last message'] = edit
+                bot.edit_message_text(edit, message.chat.id, users[number].position['last message id'])
+                bot.delete_message(message.chat.id, message.message_id)
+                return
+            bot.send_message(message.chat.id,
+                             languages.assembly['been selected'][users[number].settings['language']])
+            return
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -946,9 +983,10 @@ def callback_worker(call):
                 try:
                     users[number].position['last message type'] = 'edit true'
                     temp = users[number].schedule
-                    del temp[users[number].position['week']][users[number].position['day'] - 1][users[number].position['lesson'] - 1]
+                    del temp[users[number].position['week']][users[number].position['day'] - 1][
+                        users[number].position['lesson'] - 1]
                     lesson = users[number].position['lesson']
-                    if len(users[number].schedule[users[number].position['week']][users[number].position['day'] - 1]) <\
+                    if len(users[number].schedule[users[number].position['week']][users[number].position['day'] - 1]) < \
                             users[number].position['lesson']:
                         lesson += -1
                     users[number].schedule = temp
@@ -986,7 +1024,6 @@ def callback_worker(call):
             return
 
         if call.data[:2] == 'wd':
-
             users[number].working_day[int(call.data[-1])] = not users[number].working_day[int(call.data[-1])]
 
             working_day(call.message.chat.id, call.message.message_id)

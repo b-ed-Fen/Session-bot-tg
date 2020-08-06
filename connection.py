@@ -41,15 +41,15 @@ def Update(user_array):
                       f"(ID,Name,Surname,Schedule,Time,Settings,Position,Couples_schedule,Working_day) " \
                       f"VALUES ({str(i.id)}, '{str(i.name)}', '{str(i.surname)}', " \
                       f"'{tools.get_schedule_text(i.schedule)}', " \
-                      f"'{i.time}', '{tools.from_vocabulary_to_text(i.settings)}', " \
-                      f"'{tools.from_vocabulary_to_text(i.position)}', " \
-                      f"'{tools.from_vocabulary_to_text(i.couples_schedule)}', " \
+                      f"'{i.time}', '{tools.from_array_to_text(i.settings.values())}', " \
+                      f"'{tools.from_array_to_text(i.position.values())}', " \
+                      f"'{tools.from_array_to_text(i.couples_schedule.values())}', " \
                       f"'{tools.from_array_to_text(i.working_day)}')"
 
             cursor.execute(setinfo)
         except Exception as e:
-            print('\n' + str(e))
 
+            s = '\n'    # да, тупо.
             conn = psycopg2.connect(DATABASE_URL, sslmode='require')
             cursor = conn.cursor()
             cursor.execute(f"UPDATE UDB set Name = '{str(i.name)}' where ID = {str(i.id)}")
@@ -57,13 +57,13 @@ def Update(user_array):
             cursor.execute(f"UPDATE UDB set Schedule = '{tools.get_schedule_text(i.schedule)}' "
                            f"where ID = {str(i.id)}")
             cursor.execute(f"UPDATE UDB set Time = '{i.time}' where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Settings = '{tools.from_vocabulary_to_text(i.settings)}' "
+            cursor.execute(f"UPDATE UDB set Settings = '{tools.from_array_to_text(i.settings.values())}' "
                            f"where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Position = '{tools.from_vocabulary_to_text(i.position)}' "
+            cursor.execute(f"UPDATE UDB set Position = '{tools.from_array_to_text(i.position.values())}' "
                            f"where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Couples_schedule = '{tools.from_vocabulary_to_text(i.couples_schedule)}' "
+            cursor.execute(f"UPDATE UDB set Couples_schedule = '{tools.from_array_to_text(i.couples_schedule.values())}' "
                            f"where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Working_day = '{tools.from_array_to_text(i.working_day)}' "
+            cursor.execute(f"UPDATE UDB set Working_day = '{tools.from_array_to_text(i.working_day, s)}' "
                            f"where ID = {str(i.id)}")
 
         bar.update(t)
@@ -96,8 +96,9 @@ def get_array_user():
         settings = tools.set_settings(row[5])
         position = tools.from_text_to_array_position(row[6])
         couples_schedule = tools.from_text_to_array_couples_schedule(row[7])
+        working_day = tools.from_text_to_array_working_day(row[8])
 
-        client = user.user(id, name, surname, schedule, time, settings, position, couples_schedule)
+        client = user.user(id, name, surname, schedule, time, settings, position, couples_schedule, working_day)
 
         array.append(client)
         bar.update(t)

@@ -84,19 +84,11 @@ def make_file_with_schedule(id, array):
     file.close()
 
 
-# Из словаря в текст
-def from_vocabulary_to_text(vocabulary):
-    answer = ''
-    for i in vocabulary.values():
-        answer += str(i) + '¶'
-    return answer
-
-
 # Из массива в текст
-def from_array_to_text(array):
+def from_array_to_text(array, separator='¶'):
     answer = ''
     for i in array:
-        answer += str(i) + '¶'
+        answer += str(i) + str(separator)
     return answer
 
 
@@ -171,7 +163,8 @@ def from_text_to_array_position(text):
                     lesson = int(temp)
 
             except Exception as e:
-                print('\nThere was a problem in the "from_text_to_array_position" function.\n', f'problem: {e}, value: {temp}')
+                print('\nThere was a problem in the "from_text_to_array_position" function.\n',
+                      f'problem: {e}, value: {temp}')
 
             temp = ''
         else:
@@ -190,17 +183,26 @@ def from_text_to_array_position(text):
     return answer
 
 
-def from_text_to_array_couples_schedule(text):
+def from_text_to_array_couples_schedule(text, separator='¶'):
     answer = {}
     c = 0
     temp = ''
     for i in text:
-        if i == '¶':
+        if i == separator:
             c += 1
+            time_str = temp
+
             try:
-                answer[int(c)] = str(temp)
+                time_clock = datetime.strptime(str(time_str), '%H:%M').time()
+                # если что-то пойдет не так то выкенет Exception
+                time_str = time_clock.strftime('%H:%M')
             except Exception as e:
-                print('\nThere was a problem in the "from_text_to_array_position" function.\n', f'problem: {e}')
+                time_str = '00:00'
+
+            try:
+                answer[int(c)] = time_str
+            except Exception as e:
+                print('\nThere was a problem in the "from_text_to_array_couples_schedule" function.\n', f'problem: {e}')
             temp = ''
         else:
             temp += i
@@ -211,7 +213,7 @@ def from_text_to_array_working_day(text):
     answer = []
     temp = ''
     for i in text:
-        if i == '¶':
+        if i == '\n':
             answer.append(str_to_bool(temp))
             temp = ''
         else:

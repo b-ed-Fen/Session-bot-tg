@@ -557,8 +557,11 @@ def settings(client):
             '/notification - Turn on notifications = ' + str(client.settings['notification']) + '\n'
             '/time - Set the time for seeing = ' + str(client.time) + '\n'
             '/torn - Time instead of numbers in the schedule = ' + str(client.settings['Time instead of number']) + '\n'
-            '/edit - adjust the schedule "on the go"\n'
-            '/doc - get your schedule by document',
+            '/edit - Adjust the schedule "on the go"\n'
+            '/doc - Get your schedule by document\n'
+            '/wdn - Choose which days you want to receive notifications\n'
+            '/letime - Set a time for each activity',
+
         'ua': 'Налаштування: \n'
             '/merger - Злиття тижнів = ' + str(client.settings['combination of weeks']) + '\n'
             '/language - Вибір мови = ' + str(client.settings['language']) + '\n'
@@ -568,7 +571,10 @@ def settings(client):
             '/time - Встановити час повідомлення = ' + str(client.time) + '\n'
             '/torn - Час замість цифр в розкладі = ' + str(client.settings['Time instead of number']) + '\n'
             '/edit -  Коригуйте графік "на ходу"\n'
-            '/doc - Отримати свій графік файлом',
+            '/doc - Отримати свій графік файлом\n'
+            '/wdn - Choose which days you want to receive notifications\n'
+            '/letime - Set a time for each activity',
+
         'ru': 'Настройки: \n'
             '/merger - Слияние недель = ' + str(client.settings['combination of weeks']) + '\n'
             '/language - Выбор языка = ' + str(client.settings['language']) + '\n'
@@ -578,7 +584,9 @@ def settings(client):
             '/time - Установить время уведомлений = ' + str(client.time) + '\n'
             '/torn - Время вместо цифр в расписании = ' + str(client.settings['Time instead of number']) + '\n'
             '/edit - Корректировать график "на ходу"\n'
-            '/doc - Получить свой график файлом',
+            '/doc - Получить свой график файлом\n'
+            '/wdn - Choose which days you want to receive notifications\n'
+            '/letime - Set a time for each activity',
     }
     return user_settings[client.settings['language']]
 
