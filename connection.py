@@ -33,10 +33,13 @@ def Update(user_array):
     t = 0
 
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    cursor = conn.cursor()
+    cur = conn.cursor()
+    de = 'DELETE FROM UDB;'     # Временное решение, удаление всех данных из базы данных с последущим созданием их.
+    cur.execute(de)
     for i in user_array:
         t += 1
         try:
+
             setinfo = f"INSERT INTO UDB " \
                       f"(ID,Name,Surname,Schedule,Time,Settings,Position,Couples_schedule,Working_day) " \
                       f"VALUES ({str(i.id)}, '{str(i.name)}', '{str(i.surname)}', " \
@@ -46,30 +49,14 @@ def Update(user_array):
                       f"'{tools.from_array_to_text(i.couples_schedule.values())}', " \
                       f"'{tools.from_array_to_text(i.working_day)}')"
 
-            cursor.execute(setinfo)
+            cur.execute(setinfo)
         except Exception as e:
+            print('\n' + str(e))
 
-            s = '\n'    # да, тупо.
-            conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-            cursor = conn.cursor()
-            cursor.execute(f"UPDATE UDB set Name = '{str(i.name)}' where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Surname = '{str(i.surname)} 'where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Schedule = '{tools.get_schedule_text(i.schedule)}' "
-                           f"where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Time = '{i.time}' where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Settings = '{tools.from_array_to_text(i.settings.values())}' "
-                           f"where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Position = '{tools.from_array_to_text(i.position.values())}' "
-                           f"where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Couples_schedule = '{tools.from_array_to_text(i.couples_schedule.values())}' "
-                           f"where ID = {str(i.id)}")
-            cursor.execute(f"UPDATE UDB set Working_day = '{tools.from_array_to_text(i.working_day, s)}' "
-                           f"where ID = {str(i.id)}")
-
-        bar.update(t)
     conn.commit()
     cursor.close()
     conn.close()
+
     bar.finish()
 
 
@@ -96,7 +83,7 @@ def get_array_user():
         settings = tools.set_settings(row[5])
         position = tools.from_text_to_array_position(row[6])
         couples_schedule = tools.from_text_to_array_couples_schedule(row[7])
-        working_day = tools.from_text_to_array_working_day(row[8])
+        working_day = tools.from_text_to_array(row[8])
 
         client = user.user(id, name, surname, schedule, time, settings, position, couples_schedule, working_day)
 

@@ -20,10 +20,10 @@ users = connection.get_array_user()
 def daily_schedule(client=user.user(), w=0, d=1, arrow=False, choice=False, week_even_ignore=False):
     try:
         if client.position['week even'] and not week_even_ignore:
-            w = 1 if w == 0 else 0
+            w = 1 if w == 0 else 0  # меняем местами четность недели по требованию пользователя
 
         if client.settings['combination of weeks']:
-            w = 0
+            w = 0  # устанавливаем четное расписание если у пользователя расписание только на одну неделю
 
         answer = ''
         on_account = 0
@@ -31,39 +31,32 @@ def daily_schedule(client=user.user(), w=0, d=1, arrow=False, choice=False, week
         localtime = datetime.now() + timedelta(minutes=client.settings['UTC'] * 60)
 
         for i in client.schedule[w][d - 1]:
-            e_code = 0
-            on_account = on_account + 1  # длинна массива со временем
-            if client.settings['Time instead of number'] and len(client.schedule[w][d - 1]) < len(
-                    client.couples_schedule):
-                e_code = 1
-                # Выбор, тогда не стрелка и не время
+            on_account = on_account + 1
+            couples_schedule = client.couples_schedule
+            if client.settings['Time instead of number'] and len(client.schedule[w][d - 1]) < len(couples_schedule):
+
+                # Выбор пары, тогда не стрелка и не время пары
                 if choice and (on_account == client.position['lesson']):
                     answer = answer + '        ● ' + ' \t '
-                    e_code = 2
 
-                # Стрелка тогда не время
-                elif (client.couples_schedule[on_account] <= localtime.strftime('%H:%M') < client.couples_schedule[
-                    on_account + 1]) and arrow:
-                    e_code = 3
+                # Стрелка тогда не время пары
+                elif (couples_schedule[on_account] <= localtime.strftime('%H:%M') < couples_schedule[on_account + 1]) and arrow:
                     answer = answer + '      → ' + ' \t '
 
-                # Время
+                # Время пары
                 else:
-                    answer = answer + client.couples_schedule[on_account] + ' \t  '
-                    e_code = 4
+                    answer = answer + couples_schedule[on_account] + ' \t  '
 
             # Номер занятия
             else:
                 if choice and (on_account == client.position['lesson']):
                     answer = answer + ' ●   ' + ' \t '
-                    e_code = 5
                 else:
                     answer = answer + str(on_account) + ':  ' + ' \t  '
-                    e_code = 6
 
             answer = answer + str(i) + '\n'
     except Exception as e:
-        answer = 'Wowps! We had a problem reading your schedule, I only know that: ' + str(e) + 'ecod = ' + str(e_code)
+        answer = 'Wowps! We had a problem reading your schedule, I only know that: ' + str(e)
         if str(e) == 'list index out of range':
             answer = languages.assembly['no schedule'][client.settings['language']]
 
@@ -87,7 +80,7 @@ def information_line(client=user.user(), w=0, d=1, message='', week_even_ignore=
 
 def information_line_daily(client, w, d):
     if client.position['week even']:
-        w = 1 if w == 0 else 0
+        w = 1 if w == 0 else 0  # меняем местами четность недели по требованию пользователя
 
     answer = languages.assembly['wish of the day'][client.settings['language']][d] + ', ' + client.name
     if not client.settings['combination of weeks']:
@@ -105,7 +98,7 @@ def notification():
             localtime = datetime.now() + timedelta(minutes=client.settings['UTC'] * 60)
             if client.settings['notification'] \
                     and client.time == localtime.strftime('%H:%M') \
-                    and client.working_day[date_day.weekday()]:
+                    and client.working_day[date_day.weekday()]:  # отправка уведомлений
                 bot.send_message(client.id,
                                  information_line_daily(client, int(tools.get_even()), datetime.today().isoweekday()) +
                                  '\n' + daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
@@ -114,17 +107,23 @@ def notification():
                 if client.position['last message type'] == 'today':  # обновление сообщения today
                     bot.edit_message_text(chat_id=client.id,
                                           message_id=client.position['last message id'],
-                                          text=information_line(client, int(tools.get_even()),
-                                                                datetime.today().isoweekday()) +
-                                               '\n' + daily_schedule(client, int(tools.get_even()),
-                                                                     datetime.today().isoweekday(), arrow=True))
+                                          text=information_line(client,
+                                                                int(tools.get_even()),
+                                                                datetime.today().isoweekday())
+                                               + '\n' +
+                                               daily_schedule(client,
+                                                              int(tools.get_even()),
+                                                              datetime.today().isoweekday(),
+                                                              arrow=True))
             except Exception as e:
-                print(f' *** {client.id} has a problem - {e}')
+                print(f' *(today upd) {client.id}, \n{client.name}, \n{client.position}\n has a problem - {e}\n')
+                num = tools.find(users, client.id)
+                users[num].position['last message type'] = 'null'
 
 
 def data_update():
     while True:
-        time.sleep(60)
+        time.sleep(1799)
         connection.Update(users)
         print('database has been updated')
 
@@ -147,8 +146,12 @@ def start(message):
     global users
     number = tools.find(users, message.chat.id)
 
+    lang = 'ru' if message.from_user.language_code == 'ru' else 'us'
+    lang = 'ua' if message.from_user.language_code == 'uk' else 'us'
+
     if number is None:
         client = user.user(id=message.chat.id, name=message.from_user.first_name, surname=message.from_user.last_name)
+        client.settings['language'] = lang
         users.append(client)
         number = tools.find(users, message.chat.id)
 
@@ -161,19 +164,6 @@ def start(message):
     bot.send_message(message.chat.id,
                      languages.assembly['choose a language'][users[number].settings['language']],
                      reply_markup=language_selection)
-
-
-@bot.message_handler(commands=['test'])
-def test(message):
-    global users
-    number = tools.find(users, message.chat.id)
-
-    if number == 0:
-        bot.send_message(message.chat.id,
-                         languages.assembly['not in the database']['ru'])
-    else:
-        users[number].surname = 'none'
-        bot.send_message(message.chat.id, 'изменил', reply_markup=language_selection)
 
 
 # Сохраняем присланый файл с расписанием
@@ -440,34 +430,26 @@ def edit_day_week(user_id=0, message_id=0):
         navigation.add(week_down, week_add_a)
         navigation.add(week_del)
         navigation.add(edit_day)
-        if message_id == 0:
+
+        # весь текст сообщения
+        information = information_line(users[number],
+                                       users[number].position['week'],
+                                       users[number].position['day'],
+                                       message=languages.assembly['editing'][users[number].settings['language']],
+                                       week_even_ignore=True) + "\n" + daily_schedule(users[number],
+                                                                                      users[number].position['week'],
+                                                                                      users[number].position['day'],
+                                                                                      choice=True,
+                                                                                      week_even_ignore=True)
+        if message_id == 0:  # отправка сообщения
             bot.send_message(users[number].id,
-                             text=information_line(users[number],
-                                                   users[number].position['week'],
-                                                   users[number].position['day'],
-                                                   message=languages.assembly['editing'][
-                                                       users[number].settings['language']],
-                                                   week_even_ignore=True) + '\n' +
-                                  daily_schedule(users[number],
-                                                 users[number].position['week'],
-                                                 users[number].position['day'],
-                                                 choice=True, week_even_ignore=True),
+                             text=information,
                              reply_markup=navigation)
-        else:
+
+        else:  # изменение уже существующего сообщения
             bot.edit_message_text(chat_id=users[number].id,
                                   message_id=message_id,
-                                  text=information_line(users[number],
-                                                        users[number].position['week'],
-                                                        users[number].position['day'],
-                                                        message=languages.assembly['editing'][
-                                                            users[number].settings['language']],
-                                                        week_even_ignore=True)
-                                       + '\n' +
-                                       daily_schedule(users[number],
-                                                      users[number].position['week'],
-                                                      users[number].position['day'],
-                                                      choice=True,
-                                                      week_even_ignore=True),
+                                  text=information,
                                   reply_markup=navigation)
 
     else:  # выбор дня для редактирования
@@ -619,33 +601,33 @@ def working_day(user_id=0, message_id=None):
                          languages.assembly['not in the database']['ru'])
     else:
         navigation = types.InlineKeyboardMarkup()
-        monday = types.InlineKeyboardButton(text=f'mon: {"on" if users[number].working_day[0] else "off"}',
-                                            callback_data='wd 0')
-        tuesday = types.InlineKeyboardButton(text=f'tue: {"on" if users[number].working_day[1] else "off"}',
-                                             callback_data='wd 1')
-        wednesday = types.InlineKeyboardButton(text=f'wed: {"on" if users[number].working_day[2] else "off"}',
-                                               callback_data='wd 2')
-        thursday = types.InlineKeyboardButton(text=f'the: {"on" if users[number].working_day[3] else "off"}',
-                                              callback_data='wd 3')
-        friday = types.InlineKeyboardButton(text=f'fri: {"on" if users[number].working_day[4] else "off"}',
-                                            callback_data='wd 4')
-        saturday = types.InlineKeyboardButton(text=f'sat: {"on" if users[number].working_day[5] else "off"}',
-                                              callback_data='wd 5')
-        sunday = types.InlineKeyboardButton(text=f'sun: {"on" if users[number].working_day[6] else "off"}',
-                                            callback_data='wd 6')
+        array_of_day = []
+        i = 0
 
-        navigation.add(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
-        answer = 'What days should I remind you to save classes?\n(on - remind me of the schedule, off - do not ' \
-                 'remind me of the schedule) '
+        while i < 7:
+            array_of_day.append(
+                types.InlineKeyboardButton(
+                    text=f'{languages.assembly["week day"][users[number].settings["language"]][i + 1]}:'
+                         f' {languages.assembly["enable"]["on"][users[number].settings["language"]] if users[number].working_day[i] else languages.assembly["enable"]["off"][users[number].settings["language"]]}',
+                    callback_data=f'wd {i}')
+            )
+            i = i + 1
+
+        for i in array_of_day:
+            navigation.add(i)
 
         if message_id is None:
-            mes = bot.send_message(user_id, text=answer, reply_markup=navigation)
+            mes = bot.send_message(user_id,
+                                   text=languages.assembly['work day edit'][users[number].settings["language"]],
+                                   reply_markup=navigation)
             users[number].position['last message type'] = 'working day'
             users[number].position['last message id'] = mes.message_id
             return
 
         elif users[number].position['last message type'] == 'working day':
-            bot.edit_message_text(answer, chat_id=user_id, message_id=users[number].position['last message id'],
+            bot.edit_message_text(text=languages.assembly['work day edit'][users[number].settings["language"]],
+                                  chat_id=user_id,
+                                  message_id=users[number].position['last message id'],
                                   reply_markup=navigation)
 
 
@@ -664,9 +646,7 @@ def show_call_schedule(message):
                          languages.assembly['not in the database']['ru'])
     else:
         bot.send_message(message.chat.id,
-                         'To change, write a message in which describe the beginning of each lesson in the format '
-                         '"H:M" (eg 08:30). The classes should be separated by the enterter (one line - one lesson).\n'
-                         'The call schedule currently consists of:')
+                         languages.assembly['letime'][users[number].settings['language']])
 
         sch = tools.from_array_to_text(users[number].couples_schedule.values(), separator='\n')
         sch = sch if sch != '' else 'empty'
@@ -788,7 +768,7 @@ def callback_worker(call):
                 users[number].settings['combination of weeks'] = True
 
             elif call.data == 'connection weeks no':
-                users[number].settings['combination of weeks'] = True
+                users[number].settings['combination of weeks'] = False
 
             if call.data != past:
                 if call.data == 'connection weeks yes':
@@ -811,7 +791,7 @@ def callback_worker(call):
                 users[number].position['week even'] = True
 
             elif call.data == 'swap schedule no':
-                users[number].position['week even'] = True
+                users[number].position['week even'] = False
 
             if call.data != past:
                 if call.data == 'swap schedule yes':
@@ -932,22 +912,23 @@ def callback_worker(call):
                     users[number].position['lesson'] = 1
                     users[number].position['last message type'] = 'edit true'
 
-            if call.data == 'edit up':
+            if call.data == 'edit up':  # но ниже по списку
                 if users[number].position['lesson'] > 1:
                     users[number].position['lesson'] = users[number].position['lesson'] - 1
                     users[number].position['last message type'] = 'edit true'
                 else:
                     bot.answer_callback_query(callback_query_id=call.id,
-                                              text='negative value is impossible!')
+                                              text=languages.assembly['ed down'][users[number].settings['language']])
                     return
 
-            if call.data == 'edit down':
+            if call.data == 'edit down':  # но выше по списку
                 if users[number].position['lesson'] < len(
                         users[number].schedule[users[number].position['week']][users[number].position['day'] - 1]):
                     users[number].position['lesson'] = users[number].position['lesson'] + 1
                     users[number].position['last message type'] = 'edit true'
                 else:
-                    bot.answer_callback_query(callback_query_id=call.id, text='There is nothing further :3')
+                    bot.answer_callback_query(callback_query_id=call.id,
+                                              text=languages.assembly['ed up'][users[number].settings['language']])
                     return
 
             if call.data == 'edit add before':
@@ -986,8 +967,7 @@ def callback_worker(call):
                     del temp[users[number].position['week']][users[number].position['day'] - 1][
                         users[number].position['lesson'] - 1]
                     lesson = users[number].position['lesson']
-                    if len(users[number].schedule[users[number].position['week']][users[number].position['day'] - 1]) < \
-                            users[number].position['lesson']:
+                    if len(users[number].schedule[users[number].position['week']][users[number].position['day'] - 1]) < users[number].position['lesson']:
                         lesson += -1
                     users[number].schedule = temp
                     users[number].position['lesson'] = (lesson if lesson >= 1 else 1)
@@ -1011,12 +991,15 @@ def callback_worker(call):
                 users[number].settings['Time instead of number'] = False
 
             if call.data != past:
-                if call.data == 'torn on yes':
-                    bot.answer_callback_query(callback_query_id=call.id,
-                                              text='Time instead of number: True')
-                if call.data == 'torn on no':
-                    bot.answer_callback_query(callback_query_id=call.id,
-                                              text='Time instead of number: False')
+                if users[number].settings['Time instead of number']:
+                    decision = languages.assembly['enable']['on'][users[number].settings['language']]
+                else:
+                    decision = languages.assembly['enable']['off'][users[number].settings['language']]
+
+                bot.answer_callback_query(callback_query_id=call.id,
+                                          text=languages.assembly['Time instead of number']
+                                               [users[number].settings['language']] + decision
+                                          )
 
             else:
                 bot.answer_callback_query(callback_query_id=call.id,

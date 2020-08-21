@@ -105,22 +105,25 @@ def set_settings(text):
     Time_instead_of_number = False
     c = 0
     temp = ''
-    for i in text:
-        if i == '¶':
-            c += 1
-            if c == 1:  # notification
-                notification = str_to_bool(temp)
-            elif c == 2:  # combination of weeks
-                combination_of_weeks = str_to_bool(temp)
-            elif c == 3:  # language
-                language = str(temp)
-            elif c == 4:  # UTC
-                UTC = float(temp)
-            elif c == 5:  # Time instead of number
-                Time_instead_of_number = str_to_bool(temp)
-            temp = ''
-        else:
-            temp += i
+    try:
+        for i in text:
+            if i == '¶':
+                c += 1
+                if c == 1:  # notification
+                    notification = str_to_bool(temp)
+                elif c == 2:  # combination of weeks
+                    combination_of_weeks = str_to_bool(temp)
+                elif c == 3:  # language
+                    language = str(temp)
+                elif c == 4:  # UTC
+                    UTC = float(temp)
+                elif c == 5:  # Time instead of number
+                    Time_instead_of_number = str_to_bool(temp)
+                temp = ''
+            else:
+                temp += i
+    except Exception as e:
+        print(e)
     answer = {
         'notification': notification,  # уведомление (Да/Нет)
         'combination of weeks': combination_of_weeks,  # совместить расписание в одну неделю (Да/Нет)
@@ -209,11 +212,11 @@ def from_text_to_array_couples_schedule(text, separator='¶'):
     return answer
 
 
-def from_text_to_array_working_day(text):
+def from_text_to_array(text, separator='¶'):
     answer = []
     temp = ''
     for i in text:
-        if i == '\n':
+        if i == separator:
             answer.append(str_to_bool(temp))
             temp = ''
         else:
