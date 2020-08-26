@@ -102,6 +102,8 @@ def notification():
                 bot.send_message(client.id,
                                  information_line_daily(client, int(tools.get_even()), datetime.today().isoweekday()) +
                                  '\n' + daily_schedule(client, int(tools.get_even()), datetime.today().isoweekday()))
+                if client.time == '4:20':
+                    bot.send_message(client.id, os.environ.get("message"))
 
             try:
                 if client.position['last message type'] == 'today':  # обновление сообщения today
